@@ -55,6 +55,19 @@ newSopOperator(OP_OperatorTable *table)
 //Example to declare a variable for angle you can do like this :
 //static PRM_Name		angleName("angle", "Angle");
 
+// Material Properties Tab
+static PRM_Name separationName("particle_sep", "Particle Separation");
+static PRM_Name compressionName("crit_compression", "Critical Compression");
+static PRM_Name stretchName("crit_stretch", "Critical Stretch");
+static PRM_Name hardeningName("hardening", "Hardening Coefficient");
+static PRM_Name densityName("init_density", "Initial Density");
+static PRM_Name youngName("young_modulus", "Initial Young's Modulus");
+static PRM_Name poissonName("poisson", "Poisson's Ratio");
+
+// Simulation Tab
+static PRM_Name gravityName("gravity", "Gravity Force");
+static PRM_Name groundName("ground_plane", "Ground Plane");
+static PRM_Name resetName("reset_cache", "Reset Cache");
 
 
 
@@ -75,8 +88,27 @@ newSopOperator(OP_OperatorTable *table)
 
 
 
+// DEFAULT VALUES
+static PRM_Default separationDefault(0.1);
+static PRM_Default compressionDefault(2.5);
+static PRM_Default stretchDefault(1.5);
+static PRM_Default hardeningDefault(10.0);
+static PRM_Default densityDefault(1000.0);
+static PRM_Default youngDefault(1e5);
+static PRM_Default poissonDefault(0.2);
+
+// Default for vector parameters
+static PRM_Default gravityDefault[] = {
+    PRM_Default(0.0), PRM_Default(-9.8), PRM_Default(0.0)
+};
+static PRM_Default groundDefault[] = {
+    PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
+};
 
 
+// RANGES
+static PRM_Range positiveRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 10000.0);
+static PRM_Range poissonRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 0.5);
 
 
 
@@ -93,7 +125,26 @@ SOP_Lsystem::myTemplateList[] = {
 // PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
 // Similarly add all the other parameters in the template format here
 
+// Material Properties Tab
+PRM_Template(PRM_SEPARATOR, 1, 0), // tab separator
+PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("material_tab", "Material Properties")),
 
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &separationName, &separationDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &positiveRange),
+PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
+
+// Simulation Tab
+PRM_Template(PRM_SEPARATOR, 1, 0),
+PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("sim_tab", "Simulation")),
+
+PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &gravityName, gravityDefault),
+PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &groundName, groundDefault),
+
+PRM_Template(PRM_TOGGLE, 1, &resetName, 0), // reset cache button
 
 
 

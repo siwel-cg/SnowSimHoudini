@@ -1,66 +1,66 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\MPMSolver.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\grid.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\particle.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\LSystem.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\LSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\LSYSTEMPlugin.C">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\LSYSTEMPlugin.C">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\MPMPlugin.C">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMPlugin.C">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\main.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\vec.cpp">
+    <ClCompile Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\vec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\MPMSolver.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\grid.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\particle.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\LSystem.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\LSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\LSYSTEMPlugin.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\LSYSTEMPlugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\MPMPlugin.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMPlugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\matrix.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\src\vec.h">
+    <ClInclude Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{58477192-3DE1-311E-B332-EB4B80C362B6}</UniqueIdentifier>
+      <UniqueIdentifier>{2CD76569-8DED-3C83-9F87-8D9E28BC071E}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{0A5D4EC2-241B-35D4-8BD0-24CDCE4324F1}</UniqueIdentifier>
+      <UniqueIdentifier>{143EA9E5-7021-34A7-96CF-2311CBC013CD}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

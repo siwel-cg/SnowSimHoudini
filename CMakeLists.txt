@@ -23,7 +23,7 @@ endif()
 
 include_directories(
     "${HOUDINI_INSTALL_PATH}/toolkit/include"
-    "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/libraries"
+    "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/libraries"
     "."
     
 )

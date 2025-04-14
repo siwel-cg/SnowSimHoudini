@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4
+# Install script for directory: C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -35,7 +35,7 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build/install_local_manifest.txt"
+  file(WRITE "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -51,6 +51,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

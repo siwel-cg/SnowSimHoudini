@@ -1,6 +1,6 @@
-^C:\USERS\LEWIS\ONEDRIVE\DESKTOP\LG_SNOWSIM\HOUDINISNOWSIM\HW4CMAKE\HW4CMAKE\HW4\BUILD\CMAKEFILES\17BD7680214B30DEEE44F5A8182CD8A7\GENERATE.STAMP.RULE
+^C:\USERS\LEWIS\ONEDRIVE\DESKTOP\LG_SNOWSIM\SNOWSIMHOUDINI\BUILD\CMAKEFILES\FAEE51537509494473802720EC30D715\GENERATE.STAMP.RULE
 setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4 -BC:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build/hlsystem.sln
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini -BC:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/hlsystem.sln
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

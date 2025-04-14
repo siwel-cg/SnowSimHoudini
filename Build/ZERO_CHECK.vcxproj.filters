@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\Build\CMakeFiles\17bd7680214b30deee44f5a8182cd8a7\generate.stamp.rule">
+    <CustomBuild Include="C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\Build\CMakeFiles\faee51537509494473802720ec30d715\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{3AEC0EC1-EBB3-3681-BE9B-F86BA59913FD}</UniqueIdentifier>
+      <UniqueIdentifier>{1F4D0FF1-E28D-3831-82A2-C3CBF9DF91CE}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

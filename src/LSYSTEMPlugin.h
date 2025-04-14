@@ -62,7 +62,20 @@ private:
 	// fpreal  ANGLE(fpreal t)     { return evalFloat("angle", 0, t); }
 
 	
+// MATERIAL PROPERTIES TAB
+fpreal PARTICLE_SEP(fpreal t)        { return evalFloat("particle_sep", 0, t); }
+fpreal CRIT_COMPRESSION(fpreal t)    { return evalFloat("crit_compression", 0, t); }
+fpreal CRIT_STRETCH(fpreal t)        { return evalFloat("crit_stretch", 0, t); }
+fpreal HARDENING(fpreal t)           { return evalFloat("hardening", 0, t); }
+fpreal INIT_DENSITY(fpreal t)        { return evalFloat("init_density", 0, t); }
+fpreal YOUNG_MODULUS(fpreal t)       { return evalFloat("young_modulus", 0, t); }
+fpreal POISSON(fpreal t)             { return evalFloat("poisson", 0, t); }
 
+// SIMULATION TAB
+void GRAVITY(UT_Vector3 &v, fpreal t)      { evalVector3(v, "gravity", t); }
+void GROUND_PLANE(UT_Vector3 &v, fpreal t) { evalVector3(v, "ground_plane", t); }
+
+int RESET_CACHE(fpreal t)           { return evalInt("reset_cache", 0, t); }
 
 
 

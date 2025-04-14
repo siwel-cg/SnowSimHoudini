@@ -226,7 +226,21 @@ SOP_Lsystem::cookMySop(OP_Context &context)
     //    NOTE : ANGLE is a function that you need to use and it is declared in the header file to update your values instantly while cooking 
 	LSystem myplant;
 
-
+	float separation = PARTICLE_SEP(now);
+	float critCompression = CRIT_COMPRESSION(now);
+	float critStretch = CRIT_STRETCH(now);
+	float hardening = HARDENING(now);
+	float initDensity = INIT_DENSITY(now);
+	float youngModulus = YOUNG_MODULUS(now);
+	float poisson = POISSON(now);
+	
+	UT_Vector3 gravity;
+	GRAVITY(gravity, now);
+	
+	UT_Vector3 groundPlane;
+	GROUND_PLANE(groundPlane, now);
+	
+	int resetCache = RESET_CACHE(now);
 
 
 

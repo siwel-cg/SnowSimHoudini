@@ -1,0 +1,4 @@
+﻿  LSYSTEMPlugin.C
+     Creating library C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build/Release/hlsystem.lib and object C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/HoudiniSnowSim/HW4Cmake/HW4Cmake/HW4/Build/Release/hlsystem.exp
+  hlsystem.vcxproj -> C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\HoudiniSnowSim\HW4Cmake\HW4Cmake\HW4\Build\bin\Release\hlsystem.dll
+  Copying hlsystem.dll to CUSTOM_DSO_PATH directory

@@ -6,6 +6,8 @@
 //#include <GEO/GEO_Point.h>
 //
 #include <SOP/SOP_Node.h>
+#include <UT/UT_Vector3.h>
+#include <Eigen/Dense>
 #include "MPMPlugin.h"
 
 namespace HDK_Sample {
@@ -73,6 +75,36 @@ namespace HDK_Sample {
         // NOTE : You can declare local variables here like this  
         int		myCurrPoint;
         int		myTotalPoints;
+
+
+        // MATERIAL PROPERTIES TAB
+        fpreal PARTICLE_SEP(fpreal t) { return evalFloat("particle_sep", 0, t); }
+        fpreal CRIT_COMPRESSION(fpreal t) { return evalFloat("crit_compression", 0, t); }
+        fpreal CRIT_STRETCH(fpreal t) { return evalFloat("crit_stretch", 0, t); }
+        fpreal HARDENING(fpreal t) { return evalFloat("hardening", 0, t); }
+        fpreal INIT_DENSITY(fpreal t) { return evalFloat("init_density", 0, t); }
+        fpreal YOUNG_MODULUS(fpreal t) { return evalFloat("young_modulus", 0, t); }
+        fpreal POISSON(fpreal t) { return evalFloat("poisson", 0, t); }
+
+        // SIMULATION TAB
+        Eigen::Vector3f GRAVITY(fpreal t) {
+            return Eigen::Vector3f(
+                evalFloat("gravity", 0, t),
+                evalFloat("gravity", 1, t),
+                evalFloat("gravity", 2, t)
+            );
+        }
+        Eigen::Vector3f GROUND_PLANE(fpreal t) {
+            return Eigen::Vector3f(
+                evalFloat("ground_plane", 0, t),
+                evalFloat("ground_plane", 1, t),
+                evalFloat("ground_plane", 2, t)
+            );
+        }
+
+
+        int RESET_CACHE(fpreal t) { return evalInt("reset_cache", 0, t); }
+
     };
 } // End HDK_Sample namespace
 

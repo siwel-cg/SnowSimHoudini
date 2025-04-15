@@ -1,4 +1,4 @@
-
+﻿
 
 
 #include <UT/UT_DSOVersion.h>
@@ -43,7 +43,7 @@ newSopOperator(OP_OperatorTable *table)
 			    "SnowSim",			// UI name
 				 SOP_SnowSim::myConstructor,	// How to build the SOP
 				 SOP_SnowSim::myTemplateList,	// My parameters
-			     2,				// Min # of sources
+			     1,				// Min # of sources
 			     2,				// Max # of sources
 				 SOP_SnowSim::myVariables,	// Local variables
 			     OP_FLAG_GENERATOR)		// Flag it as generator
@@ -56,10 +56,19 @@ newSopOperator(OP_OperatorTable *table)
 //Example to declare a variable for angle you can do like this :
 //static PRM_Name		angleName("angle", "Angle");
 
-
-
-
-
+//// Material Properties Tab
+//static PRM_Name separationName("particle_sep", "Particle Separation");
+//static PRM_Name compressionName("crit_compression", "Critical Compression");
+//static PRM_Name stretchName("crit_stretch", "Critical Stretch");
+//static PRM_Name hardeningName("hardening", "Hardening Coefficient");
+//static PRM_Name densityName("init_density", "Initial Density");
+//static PRM_Name youngName("young_modulus", "Initial Young's Modulus");
+//static PRM_Name poissonName("poisson", "Poisson's Ratio");
+//
+//// Simulation Tab
+//static PRM_Name gravityName("gravity", "Gravity Force");
+//static PRM_Name groundName("ground_plane", "Ground Plane");
+//static PRM_Name resetName("reset_cache", "Reset Cache");
 
 
 
@@ -75,6 +84,27 @@ newSopOperator(OP_OperatorTable *table)
 // static PRM_Default angleDefault(30.0);	
 
 
+//// DEFAULT VALUES
+//static PRM_Default separationDefault(0.1);
+//static PRM_Default compressionDefault(2.5);
+//static PRM_Default stretchDefault(1.5);
+//static PRM_Default hardeningDefault(10.0);
+//static PRM_Default densityDefault(1000.0);
+//static PRM_Default youngDefault(1e5);
+//static PRM_Default poissonDefault(0.2);
+//
+//// Default for vector parameters
+//static PRM_Default gravityDefault[] = {
+//	PRM_Default(0.0), PRM_Default(-9.8), PRM_Default(0.0)
+//};
+//static PRM_Default groundDefault[] = {
+//	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
+//};
+//
+//
+//// RANGES
+//static PRM_Range positiveRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 10000.0);
+//static PRM_Range poissonRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 0.5);
 
 
 
@@ -86,22 +116,45 @@ newSopOperator(OP_OperatorTable *table)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 PRM_Template
 SOP_SnowSim::myTemplateList[] = {
-// PUT YOUR CODE HERE
-// You now need to fill this template with your parameter name and their default value
-// EXAMPLE : For the angle parameter this is how you should add into the template
-// PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
-// Similarly add all the other parameters in the template format here
+	// PUT YOUR CODE HERE
+	// You now need to fill this template with your parameter name and their default value
+	// EXAMPLE : For the angle parameter this is how you should add into the template
+	// PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
+	// Similarly add all the other parameters in the template format here
+
+
+
+	//// Material Properties Tab
+	//PRM_Template(PRM_SEPARATOR, 1, 0), // tab separator
+	////PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("material_tab", "Material Properties")),
+
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &separationName, &separationDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &positiveRange),
+	//PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
+
+	//// Simulation Tab
+	//PRM_Template(PRM_SEPARATOR, 1, 0),
+	////PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("sim_tab", "Simulation")),
+
+	//PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &gravityName, gravityDefault),
+	//PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &groundName, groundDefault),
+
+	//PRM_Template(PRM_TOGGLE, 1, &resetName, 0), // reset cache button
 
 
 
 
+	/////////////////////////////////////////////////////////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-    PRM_Template()
+	PRM_Template()
 };
 
 
@@ -179,106 +232,87 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 	MPMSolver MPMSolver(Eigen::Vector3f(2.0f, 2.0f, 2.0f), 0.05f, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.00001f,
 		0.025f, 0.0075f, 10.f, 400.f, 140000.f, 0.2f);
 
-	
+	/*float separation = PARTICLE_SEP(now);
+	float critCompression = CRIT_COMPRESSION(now);
+	float critStretch = CRIT_STRETCH(now);
+	float hardening = HARDENING(now);
+	float initDensity = INIT_DENSITY(now);
+	float youngModulus = YOUNG_MODULUS(now);
+	float poisson = POISSON(now);
+
+	Eigen::Vector3f gravity = GRAVITY(now);
+	Eigen::Vector3f ground_plane = GROUND_PLANE(now);
+
+	int resetCache = RESET_CACHE(now);*/
 
 
 
 
-	///////////////////////////////////////////////////////////////////////////
-
-	//PUT YOUR CODE HERE
-	// Next you need to call your Lystem cpp functions 
-	// Below is an example , you need to call the same functions based on the variables you declare
-    // myplant.loadProgramFromString("F\nF->F[+F]F[-F]";  
-    // myplant.setDefaultAngle(30.0f);
-    // myplant.setDefaultStep(1.0f);
 
 
 
+	//if (const GU_Detail* inputGeometry = inputGeo(0, context)) {
+	//	GA_Offset ptoff;
+	//	GA_FOR_ALL_PTOFF(inputGeometry, ptoff) {
+	//		const UT_Vector3& pos = inputGeometry->getPos3(ptoff);
 
+	//		Eigen::Vector3f position(pos.x(), pos.y(), pos.z());
+	//		Eigen::Vector3f velocity(0.0f, -5.0f, 0.0f);  
 
-	///////////////////////////////////////////////////////////////////////////////
-
-	// PUT YOUR CODE HERE
-	// You the need call the below function for all the genrations ,so that the end points points will be
-	// stored in the branches vector , you need to declare them first
-
-	//for (int i = 0; i < generations ; i++)
-	//{
-	//	  myplant.process(i, branches);
+	//		MPMSolver.addParticle(particle(position, velocity, 1.0f));
+	//	}
 	//}
 
 
+	// THIS IS JUST A TEST TO SEE IF I CAN DO SOMETHING TO INCOMMING POINTS ****
 
 
-
-	///////////////////////////////////////////////////////////////////////////////////
-
-
-	// Now that you have all the branches ,which is the start and end point of each point ,its time to render 
-	// these branches into Houdini 
-    
-
-	// PUT YOUR CODE HERE
-	// Declare all the necessary variables for drawing cylinders for each branch 
-    float		 rad, tx, ty, tz;
-    int			 divisions, plane;
-    int			 xcoord =0, ycoord = 1, zcoord =2;
-    float		 tmp;
-    UT_Vector4		 pos;
-    GU_PrimPoly		*poly;
-    int			 i;
     UT_Interrupt	*boss;
 
-    // Since we don't have inputs, we don't need to lock them.
 
-    divisions  = 5;	// We need twice our divisions of points
-    myTotalPoints = divisions;		// Set the NPT local variable value
-    myCurrPoint   = 0;			// Initialize the PT local variable
-
-
-
-    // Check to see that there hasn't been a critical error in cooking the SOP.
-    if (error() < UT_ERROR_ABORT)
-    {
-	boss = UTgetInterrupt();
-	if (divisions < 4)
+	if (error() < UT_ERROR_ABORT)
 	{
-	    // With the range restriction we have on the divisions, this
-	    //	is actually impossible, but it shows how to add an error
-	    //	message or warning to the SOP.
-	    addWarning(SOP_MESSAGE, "Invalid divisions");
-	    divisions = 4;
+		UT_Interrupt* boss = UTgetInterrupt();
+		
+		gdp->clearAndDestroy();
+
+		// Start interrupt monitor
+		if (boss->opStart("Building SnowSim"))
+		{
+			gdp->clearAndDestroy();
+
+			if (!lockInput(0, context)) {
+				addWarning(SOP_MESSAGE, "Failed to lock input 0.");
+				return error();
+			}
+			const GU_Detail* input = inputGeo(0, context);
+			if (!input) {
+				addWarning(SOP_MESSAGE, "Input geometry is null after locking.");
+				unlockInput(0);
+				return error();
+			}
+
+
+			
+			GA_Offset ptoff;
+			GA_FOR_ALL_PTOFF(input, ptoff) {
+				const UT_Vector3& pos = input->getPos3(ptoff);
+
+				Eigen::Vector3f p(pos.x(), pos.y(), pos.z());
+				p.y() += 0.5f;
+
+				GA_Offset new_pt = gdp->appendPoint();
+				gdp->setPos3(new_pt, UT_Vector3(p.x(), p.y(), p.z()));
+			}
+			
+
+			unlockInput(0);
+	
+		}
+
+		boss->opEnd();  // Always call this after opStart
 	}
-	gdp->clearAndDestroy();
 
-	// Start the interrupt server
-	if (boss->opStart("Building SnowSim"))
-	{
-        // PUT YOUR CODE HERE
-	    // Build a polygon
-	    // You need to build your cylinders inside Houdini from here
-		// TIPS:
-		// Use GU_PrimPoly poly = GU_PrimPoly::build(see what values it can take)
-		// Also use GA_Offset ptoff = poly->getPointOffset()
-		// and gdp->setPos3(ptoff,YOUR_POSITION_VECTOR) to build geometry.
-
-
-
-		////////////////////////////////////////////////////////////////////////////////////////////
-
-	    // Highlight the star which we have just generated.  This routine
-	    // call clears any currently highlighted geometry, and then it
-	    // highlights every primitive for this SOP. 
-	    select(GU_SPrimitive);
-	}
-
-	// Tell the interrupt server that we've completed. Must do this
-	// regardless of what opStart() returns.
-	boss->opEnd();
-    }
-
-    myCurrPoint = -1;
-    return error();
+	return error();
 }
 

@@ -125,26 +125,26 @@ SOP_Lsystem::myTemplateList[] = {
 // PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
 // Similarly add all the other parameters in the template format here
 
-// Material Properties Tab
-PRM_Template(PRM_SEPARATOR, 1, 0), // tab separator
-PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("material_tab", "Material Properties")),
+	// Material Properties Tab
+	PRM_Template(PRM_SEPARATOR, 1, 0), // tab separator
+	PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("material_tab", "Material Properties")),
 
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &separationName, &separationDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &positiveRange),
-PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &separationName, &separationDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &positiveRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
 
-// Simulation Tab
-PRM_Template(PRM_SEPARATOR, 1, 0),
-PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("sim_tab", "Simulation")),
+	// Simulation Tab
+	PRM_Template(PRM_SEPARATOR, 1, 0),
+	PRM_Template(PRM_LABEL, 1, 0, &PRM_Name("sim_tab", "Simulation")),
 
-PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &gravityName, gravityDefault),
-PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &groundName, groundDefault),
+	PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &gravityName, gravityDefault),
+	PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &groundName, groundDefault),
 
-PRM_Template(PRM_TOGGLE, 1, &resetName, 0), // reset cache button
+	PRM_Template(PRM_TOGGLE, 1, &resetName, 0), // reset cache button
 
 
 
@@ -241,9 +241,6 @@ SOP_Lsystem::cookMySop(OP_Context &context)
 	GROUND_PLANE(groundPlane, now);
 	
 	int resetCache = RESET_CACHE(now);
-
-
-
 
 
 

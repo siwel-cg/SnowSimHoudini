@@ -132,7 +132,7 @@ void MPMSolver::updateParticleDefGrad() {
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
 
     for (particle& p : particles) {
-        Eigen::Matrix3f velGrad = Eigen::Matrix3f(0.f);
+        Eigen::Matrix3f velGrad = Eigen::Matrix3f::Zero();
 
         // WORLD SPACE POSITIONS
         float x = p.position[0];
@@ -143,8 +143,8 @@ void MPMSolver::updateParticleDefGrad() {
         int j = static_cast<int>(std::floor((y - yMin) / grid.spacing));
         int k = static_cast<int>(std::floor((z - zMin) / grid.spacing));
 
-        Eigen::Vector3f vPic = Eigen::Vector3f(0.f);
-        Eigen::Vector3f vFlip = Eigen::Vector3f(0.f);
+        Eigen::Vector3f vPic = Eigen::Vector3f::Zero();
+        Eigen::Vector3f vFlip = Eigen::Vector3f::Zero();
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
         for (int di = -2; di < 2; di++) {
             for (int dj = -2; dj < 2; dj++) {

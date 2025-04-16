@@ -36,12 +36,10 @@ mpmgrid::mpmgrid(Eigen::Vector3f dim, float spc, Eigen::Vector3f cent)
             for (int i = 0; i < nx; ++i) {
                 int idx = i + nx * (j + ny * k);
 
-                //gridNodes[idx].idx = Eigen::Vector3i(i, j, k);
-
                 // CENTER POS IN WORLD SPACE
-                float xNode = minCorner[0] + (float(i) + 0.5f) * spacing;
-                float yNode = minCorner[1] + (float(j) + 0.5f) * spacing;
-                float zNode = minCorner[2] + (float(k) + 0.5f) * spacing;
+                float xNode = minCorner[0] + (i + 0.5f) * spacing;
+                float yNode = minCorner[1] + (j + 0.5f) * spacing;
+                float zNode = minCorner[2] + (k + 0.5f) * spacing;
                 gridNodes[idx].worldPos = Eigen::Vector3f(xNode, yNode, zNode);
             }
         }

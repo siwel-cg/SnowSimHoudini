@@ -12,7 +12,6 @@ struct GridNode {
     float velocityMass;
 
     Eigen::Vector3f worldPos;
-    //Eigen::Vector3i idx;
     GridNode();
 };
 

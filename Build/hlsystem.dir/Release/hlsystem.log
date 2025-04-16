@@ -1,34 +1,25 @@
-﻿  Building Custom Rule C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/CMakeLists.txt
-  MPMSolver.cpp
+﻿  MPMSolver.cpp
 C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\PlainObjectBase.h(845,7): error C2338: static_assert failed: 'FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED'
   (compiling source file '../src/MPMSolver.cpp')
       C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\PlainObjectBase.h(845,7):
       the template instantiation context (the oldest one first) is
-          C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(135,50):
-          see reference to function template instantiation 'Eigen::Matrix<float,3,3,0,3,3>::Matrix<float>(const T &)' being compiled
+          C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(340,44):
+          see reference to function template instantiation 'Eigen::Matrix<float,3,1,0,3,1>::Matrix<float>(const T &)' being compiled
           with
           [
               T=float
           ]
-              C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(135,50):
-              see the first reference to 'Eigen::Matrix<float,3,3,0,3,3>::Matrix' in 'MPMSolver::updateParticleDefGrad'
+              C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(340,27):
+              see the first reference to 'Eigen::Matrix<float,3,1,0,3,1>::Matrix' in 'MPMSolver::particleToGridTransfer'
           C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\Matrix.h(332,22):
-          see reference to function template instantiation 'void Eigen::PlainObjectBase<Eigen::Matrix<float,3,3,0,3,3>>::_init1<T>(Eigen::EigenBase<Derived>::Index,float *)' being compiled
+          see reference to function template instantiation 'void Eigen::PlainObjectBase<Eigen::Matrix<float,3,1,0,3,1>>::_init1<T>(Eigen::EigenBase<Derived>::Index,float *)' being compiled
           with
           [
               T=float,
-              Derived=Eigen::Matrix<float,3,3,0,3,3>
+              Derived=Eigen::Matrix<float,3,1,0,3,1>
           ]
   
   grid.cpp
-  particle.cpp
-  LSystem.cpp
-C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\matrix.h(157,8): warning C5308: Modifying reserved macro name '_MSC_EXTENSIONS' may cause undefined behavior
-  (compiling source file '../src/LSystem.cpp')
-  
-  LSYSTEMPlugin.C
   MPMPlugin.C
   Deprecated in Houdini 13.0. Use SYS_Math.h instead.
-  main.cpp
-  vec.cpp
   Generating Code...

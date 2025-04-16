@@ -17,15 +17,6 @@ MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gri
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) + (1.f - 2.f * poissonRatio));
 }
 
-MPMSolver::MPMSolver() :
-    stepSize(0.00001f), grid(Eigen::Vector3f(Eigen::Vector3f(2.0f, 2.0f, 2.0f)), 0.05f, Eigen::Vector3f(Eigen::Vector3f(0.0f, 0.0f, 0.0f))),
-    critCompression(0.025f), critStretch(0.0075f), hardeningCoeff(10.f),
-    initialDensity(400.f), youngsMod(140000.f), poissonRatio(0.2f)
-{
-    mu0 = youngsMod / (2.f * (1.f + poissonRatio));
-    lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) + (1.f - 2.f * poissonRatio));
-}
-
 void MPMSolver::addParticle(const particle& particle) {
     particles.push_back(particle);
 }
@@ -91,7 +82,7 @@ static float weightFun(float x) {
 
 static float weightFunGradient(float x) {
     x = abs(x);
-    if (x >= 0.f && x < 1.f) {
+    if (x > 0.f && x < 1.f) {
         return 3.f * abs(x) / (2.f * x) - 2.f * x;
     }
     else if (x >= 1.f && x < 2.f) {
@@ -106,22 +97,28 @@ static float weightFunGradient(float x) {
 
 void MPMSolver::computeSigma() {
     for (particle& p : particles) {
-        Eigen::Matrix3f F = p.FE;
+        Eigen::Matrix3f Fe = p.FE;// Eigen::Matrix3f::Identity();
+        Eigen::Matrix3f Fp = p.FP;// Eigen::Matrix3f::Identity();
 
         // COMPUTE POLAR DECOMP TO GET ROTATIONAL PART OF F
-        Eigen::JacobiSVD<Eigen::Matrix3f> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Matrix3f U = svd.matrixU();
         Eigen::Matrix3f V = svd.matrixV();
 
         Eigen::Matrix3f R = U * V.transpose();
-        float J = F.determinant();
+        float Je = Fe.determinant();
+        float Jp = Fp.determinant();
 
-        Eigen::Matrix3f strain = F - R;
 
-        // SINCE WE HAVE NO FP: mu = mu0 and lambda = lambda0 for the entire sim
-        // CHANGE THIS LATER
-        Eigen::Matrix3f sigma = 2.f * mu0 * strain + lambda0 * strain.trace() * Eigen::Matrix3f::Identity();
-        sigma *= (1.f / J); // Cauchy stress
+        float xi = 10.0f; // default value, tweak as needed
+ 
+         // Plastic-hardening-modified Lame parameters
+         float mu = mu0 * std::exp(xi * (1.0f - Jp));
+         float lambda = lambda0 * std::exp(xi * (1.0f - Jp));
+ 
+         Eigen::Matrix3f strain = Fe - R;
+         Eigen::Matrix3f sigma = 2.0f * mu * strain + lambda * (Je - 1.0f) * Eigen::Matrix3f::Identity();
+         sigma *= (1.0f / Je); // Cauchy stress
 
         p.sigma = sigma;
     }

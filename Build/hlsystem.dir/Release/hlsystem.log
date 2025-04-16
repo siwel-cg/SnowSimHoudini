@@ -1,5 +1,17 @@
-﻿  MPMPlugin.C
+﻿  Building Custom Rule C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/CMakeLists.txt
+  MPMSolver.cpp
+  grid.cpp
+  particle.cpp
+  LSystem.cpp
+C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\matrix.h(157,8): warning C5308: Modifying reserved macro name '_MSC_EXTENSIONS' may cause undefined behavior
+  (compiling source file '../src/LSystem.cpp')
+  
+  LSYSTEMPlugin.C
+  MPMPlugin.C
   Deprecated in Houdini 13.0. Use SYS_Math.h instead.
+  main.cpp
+  vec.cpp
+  Generating Code...
      Creating library C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.lib and object C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.exp
   hlsystem.vcxproj -> C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\Build\bin\Release\hlsystem.dll
   Copying hlsystem.dll to CUSTOM_DSO_PATH directory

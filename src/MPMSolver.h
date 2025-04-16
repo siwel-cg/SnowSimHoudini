@@ -15,6 +15,7 @@ public:
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
         float poissonRatio);
+    MPMSolver();
     void addParticle(const particle& particle);
     void computeForcesAndIntegrate();
 

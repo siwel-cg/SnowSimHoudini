@@ -8,7 +8,7 @@
 #include <SOP/SOP_Node.h>
 #include <UT/UT_Vector3.h>
 #include <Eigen/Dense>
-#include "MPMPlugin.h"
+#include "MPMSolver.h"
 
 namespace HDK_Sample {
     class SOP_SnowSim : public SOP_Node
@@ -24,10 +24,19 @@ namespace HDK_Sample {
         /// This optional data stores the list of local variables.
         static CH_LocalVariable	 myVariables[];
 
+        MPMSolver solver;
+
+        
+
+
     protected:
 
         SOP_SnowSim(OP_Network* net, const char* name, OP_Operator* op);
         virtual ~SOP_SnowSim();
+
+        bool isTimeDependent() const;
+
+
 
         /// Disable parameters according to other parameters.
         virtual unsigned		 disableParms();
@@ -75,6 +84,9 @@ namespace HDK_Sample {
         // NOTE : You can declare local variables here like this  
         int		myCurrPoint;
         int		myTotalPoints;
+
+        
+        int lastFrameSimulated = -1;
 
 
         // MATERIAL PROPERTIES TAB

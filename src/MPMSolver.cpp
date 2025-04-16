@@ -12,6 +12,16 @@ MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gri
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
     initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio)
 {
+ 
+    mu0 = youngsMod / (2.f * (1.f + poissonRatio));
+    lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) + (1.f - 2.f * poissonRatio));
+}
+
+MPMSolver::MPMSolver() :
+    stepSize(0.00001f), grid(Eigen::Vector3f(Eigen::Vector3f(2.0f, 2.0f, 2.0f)), 0.05f, Eigen::Vector3f(Eigen::Vector3f(0.0f, 0.0f, 0.0f))),
+    critCompression(0.025f), critStretch(0.0075f), hardeningCoeff(10.f),
+    initialDensity(400.f), youngsMod(140000.f), poissonRatio(0.2f)
+{
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) + (1.f - 2.f * poissonRatio));
 }

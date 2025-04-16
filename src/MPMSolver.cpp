@@ -285,9 +285,9 @@ void MPMSolver::particleToGridTransfer() {
         int k = static_cast<int>(std::floor((z - zMin) / grid.spacing));
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -1; di < 1; di++) {
-            for (int dj = -1; dj < 1; dj++) {
-                for (int dk = -1; dk < 1; dk++) {
+        for (int di = -2; di < 2; di++) {
+            for (int dj = -2; dj < 2; dj++) {
+                for (int dk = -2; dk < 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -314,14 +314,28 @@ void MPMSolver::particleToGridTransfer() {
                     // UPDATE CURRENT NODE WE ARE LOOKING AT
                     curNode.mass += p.mass * weight;
                     curNode.velocity += p.velocity * p.mass * weight;
+
+                    if (p.velocity.size() > 1e-6f) { // Only if velocity is non-zero
+                        curNode.velocityMass += curNode.mass;
+                    }
                 }
             }
         }
     }
 
+    // Normalize grid node velocities using only effective mass
+    for (GridNode& node : grid.gridNodes) {
+        if (node.velocityMass > 0.f) {
+            node.velocity /= node.velocityMass;
+        }
+        else {
+            node.velocity = Eigen::Vector3f(0.f);
+        }
+    }
+
     // Currently the velocity stored is actually the total weighted momentum
     // To convert it to actual vel we divide each gridCell by its mass
-    grid.divideMass();
+    //grid.divideMass();
 }
 
 // THIS SHOULD ONLY BE CALLED ONCE AT t=0
@@ -342,9 +356,9 @@ void MPMSolver::computeInitialDensity() {
         int k = static_cast<int>(std::floor((z - zMin) / grid.spacing));
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -1; di < 1; di++) {
-            for (int dj = -1; dj < 1; dj++) {
-                for (int dk = -1; dk < 1; dk++) {
+        for (int di = -2; di < 2; di++) {
+            for (int dj = -2; dj < 2; dj++) {
+                for (int dk = -2; dk < 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -394,9 +408,9 @@ void MPMSolver::computeInitialDensity() {
 
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -1; di < 1; di++) {
-            for (int dj = -1; dj < 1; dj++) {
-                for (int dk = -1; dk < 1; dk++) {
+        for (int di = -2; di < 2; di++) {
+            for (int dj = -2; dj < 2; dj++) {
+                for (int dk = -2; dk < 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -455,9 +469,9 @@ void MPMSolver::computeForce() {
 
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -1; di < 1; di++) {
-            for (int dj = -1; dj < 1; dj++) {
-                for (int dk = -1; dk < 1; dk++) {
+        for (int di = -2; di < 2; di++) {
+            for (int dj = -2; dj < 2; dj++) {
+                for (int dk = -2; dk < 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -481,7 +495,7 @@ void MPMSolver::computeForce() {
                     gradWeight[1] = 1.f / grid.spacing * weightFun(xGrid) * weightFunGradient(yGrid) * weightFun(zGrid);
                     gradWeight[2] = 1.f / grid.spacing * weightFun(xGrid) * weightFun(yGrid) * weightFunGradient(zGrid);
 
-                    curNode.force -= p.volume * p.sigma * gradWeight + computeGravity(p);
+                    curNode.force -= p.volume * p.sigma * gradWeight + (Eigen::Vector3f(0.f, gravity, 0.f) * p.mass);
                 }
             }
         }
@@ -500,6 +514,7 @@ void MPMSolver::updateGridVel() {
     for (GridNode& g : grid.gridNodes) {
         if (g.mass > 0.f) {
             // COMPUTE VEL FROM GRID FORCES
+            g.prevVelocity = g.velocity;
             g.velocity += stepSize * (1.f / g.mass) * g.force;
 
             // VERY SIMPLE BOUNDING COLLISION

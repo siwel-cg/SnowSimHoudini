@@ -5,9 +5,11 @@
 
 struct GridNode {
     Eigen::Vector3f velocity;
+    Eigen::Vector3f prevVelocity;
     float mass;
     float density;
     Eigen::Vector3f force;
+    float velocityMass;
 
     Eigen::Vector3f worldPos;
     //Eigen::Vector3i idx;

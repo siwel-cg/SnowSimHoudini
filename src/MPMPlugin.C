@@ -205,7 +205,7 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 	// THESE ARE HARD CODED BASE POINTS
 	// UPDATE WITH READ IN GEOMETRY
 	float spacing = 0.02f;
-	Eigen::Vector3f dim = Eigen::Vector3f(20, 20, 20);
+	Eigen::Vector3f dim = Eigen::Vector3f(20.0f, 20.0f, 20.0f);
 	Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
 	origin *= spacing * -0.5;
 	for (int i = 0; i < dim[0]; ++i)

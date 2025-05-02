@@ -55,9 +55,9 @@ Eigen::Vector3f MPMSolver::computeCohesion(const MPMParticle& p) {
     for (const MPMParticle& neighbor : particles) {
         if (&p == &neighbor) continue;
         Eigen::Vector3f diff = neighbor.position - p.position;
-        float distance = diff.size();
+        float distance = diff.norm();
         if (distance > 0 && distance < grid.spacing) {
-            cohesionForce += (diff * (1.f / diff.size())) * cohesionStrength / distance;
+            cohesionForce += (diff * (1.f / diff.norm())) * cohesionStrength / distance;
         }
     }
     return cohesionForce;
@@ -373,7 +373,7 @@ void MPMSolver::particleToGridTransfer() {
                     // POSITION IN GRID SPACE
                     float xGrid = (x - curNode.worldPos[0]) / grid.spacing;
                     float yGrid = (y - curNode.worldPos[1]) / grid.spacing;
-                    float zGrid = (z - curNode.worldPos[1]) / grid.spacing;
+                    float zGrid = (z - curNode.worldPos[2]) / grid.spacing;
 
                     // WEIGHT OF GRID CELL RELATICE TO PARTICLE GRID
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);

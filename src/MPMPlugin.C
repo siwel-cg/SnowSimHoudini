@@ -197,7 +197,7 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
     myCurrPoint = -1;	// To prevent garbage values from being returned
 
 	// INITILIZE MPM SOLVER
-	solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
+	solver = MPMSolver(Eigen::Vector3f(3.f, 3.f, 3.f), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
 		0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
 
 	//
@@ -210,19 +210,19 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 	origin *= spacing * -0.5;
 
 	// CUBE 
-	/*for (int i = 0; i < dim[0]; ++i)
-	{
-		for (int j = 0; j < dim[1]; ++j)
-		{
-			for (int k = 0; k < dim[2]; ++k)
-			{
-				float x = origin[0] + i * spacing;
-				float y = origin[1] + j * spacing;
-				float z = origin[2] + k * spacing;
-				solver.addParticle(MPMParticle::MPMParticle(Eigen::Vector3f(x, y, z), Eigen::Vector3f(0.0f, -5.0f, 0.0f), 1.0f));
-			}
-		}
-	}*/
+	//for (int i = 0; i < dim[0]; ++i)
+	//{
+	//	for (int j = 0; j < dim[1]; ++j)
+	//	{
+	//		for (int k = 0; k < dim[2]; ++k)
+	//		{
+	//			float x = origin[0] + i * spacing;
+	//			float y = origin[1] + j * spacing;
+	//			float z = origin[2] + k * spacing;
+	//			solver.addParticle(MPMParticle::MPMParticle(Eigen::Vector3f(x, y, z), Eigen::Vector3f(0.0f, -5.0f, 0.0f), 1.0f));
+	//		}
+	//	}
+	//}
 
 	float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
 	Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
@@ -235,7 +235,6 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 				pos.x() = origin.x() + i * spacing;
 				pos.y() = origin.y() + j * spacing;
 				pos.z() = origin.z() + k * spacing;
-
 				// 4) test distance to center
 				if ((pos - center).norm() <= radius) {
 					solver.addParticle(MPMParticle(pos,Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f));
@@ -325,7 +324,7 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 
 	gdp->clearAndDestroy();
 
-	std::cout << "Making: " << solver.getParticles().size() << "Points" << std::endl;
+	//std::cout << "Making: " << solver.getParticles().size() << "Points" << std::endl;
 
 	// THIS WILL INSTATIATE THE POINTS IN SPACE
 	for each(MPMParticle p in solver.getParticles()) 
@@ -350,6 +349,8 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 	int resetCache = RESET_CACHE(now);*/
 
 
+
+	// * * * * INPUT GEOMETRY TEST * * * *
 
 	//if (const GU_Detail* inputGeometry = inputGeo(0, context)) {
 	//	GA_Offset ptoff;

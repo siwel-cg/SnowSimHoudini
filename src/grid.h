@@ -1,6 +1,7 @@
 #ifndef MPMGRID_H
 #define MPMGRID_H
 
+#include <vector>
 #include <Eigen/Dense>
 
 struct GridNode {
@@ -12,22 +13,20 @@ struct GridNode {
     float velocityMass;
 
     Eigen::Vector3f worldPos;
+    Eigen::Vector3i idx;
     GridNode();
 };
 
-class mpmgrid
-{
-private:
-
+class mpmgrid {
 public:
     mpmgrid();
-    mpmgrid(Eigen::Vector3f dim, float spacing, Eigen::Vector3f center);
+    mpmgrid(const Eigen::Vector3f& dim, float spacing, const Eigen::Vector3f& center);
+
     Eigen::Vector3f dimension;
     float spacing;
     Eigen::Vector3f center;
     std::vector<GridNode> gridNodes;
 
-    // NUMBER OF CELLS IN EACH DIM
     int nx;
     int ny;
     int nz;

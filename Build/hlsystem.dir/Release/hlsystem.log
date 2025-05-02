@@ -1,25 +1,5 @@
-﻿  MPMSolver.cpp
-C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\PlainObjectBase.h(845,7): error C2338: static_assert failed: 'FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED'
-  (compiling source file '../src/MPMSolver.cpp')
-      C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\PlainObjectBase.h(845,7):
-      the template instantiation context (the oldest one first) is
-          C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(340,44):
-          see reference to function template instantiation 'Eigen::Matrix<float,3,1,0,3,1>::Matrix<float>(const T &)' being compiled
-          with
-          [
-              T=float
-          ]
-              C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\src\MPMSolver.cpp(340,27):
-              see the first reference to 'Eigen::Matrix<float,3,1,0,3,1>::Matrix' in 'MPMSolver::particleToGridTransfer'
-          C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries\Eigen\src\Core\Matrix.h(332,22):
-          see reference to function template instantiation 'void Eigen::PlainObjectBase<Eigen::Matrix<float,3,1,0,3,1>>::_init1<T>(Eigen::EigenBase<Derived>::Index,float *)' being compiled
-          with
-          [
-              T=float,
-              Derived=Eigen::Matrix<float,3,1,0,3,1>
-          ]
-  
-  grid.cpp
-  MPMPlugin.C
+﻿  MPMPlugin.C
   Deprecated in Houdini 13.0. Use SYS_Math.h instead.
-  Generating Code...
+     Creating library C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.lib and object C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.exp
+  hlsystem.vcxproj -> C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\Build\bin\Release\hlsystem.dll
+  Copying hlsystem.dll to CUSTOM_DSO_PATH directory

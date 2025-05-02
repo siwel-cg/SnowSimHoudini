@@ -1,3 +1,4 @@
+#if 0
 #ifndef LSystem_H_
 #define LSystem_H_
 
@@ -68,5 +69,7 @@ protected:
         vec3 left;
     };
 };
+
+#endif
 
 #endif

@@ -1,25 +1,27 @@
 #pragma once
 
-// #ifndef MPMSOLVER_H
-// #define MPMSOLVER_H
-
+#include <vector>
+#include <Eigen/Dense>
 #include "particle.h"
 #include "grid.h"
-#include <Eigen/Dense>
+#pragma once
 
+// #ifndef MPMSOLVER_H
+// #define MPMSOLVER_H
 
 class MPMSolver
 {
 public:
+    MPMSolver();
     MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
         float poissonRatio);
-    MPMSolver();
-    void addParticle(const particle& particle);
+    void addParticle(const MPMParticle& particle);
     void computeForcesAndIntegrate();
 
-    const vector<particle>& getParticles() const;
+	const std::vector<MPMParticle>& getParticles() const;
+    
 
     float stepSize;
     float critCompression;
@@ -38,13 +40,13 @@ public:
     void step();
 
 private:
-    vector<particle> particles;
+    std::vector<MPMParticle> particles;
     mpmgrid grid;
 
 
-    Eigen::Vector3f computeGravity(const particle& p);
-    Eigen::Vector3f computeCohesion(const particle& p);
-    void integrate(particle& p, Eigen::Vector3f force);
+    Eigen::Vector3f computeGravity(const MPMParticle& p);
+    Eigen::Vector3f computeCohesion(const MPMParticle& p);
+    void integrate(MPMParticle& p, Eigen::Vector3f force);
 
     // PARTICLE FUNCTIONS
     void computeSigma();

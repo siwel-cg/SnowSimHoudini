@@ -1,3 +1,6 @@
+#if 0
+
+
 #include "LSystem.h"    
 #include <fstream>
 #include <stack>
@@ -265,3 +268,5 @@ void LSystem::process(unsigned int n,
         }
     }
 }
+
+#endif

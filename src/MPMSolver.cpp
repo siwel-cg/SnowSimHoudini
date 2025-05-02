@@ -1,9 +1,26 @@
 ﻿#include "mpmsolver.h"
+#include <iostream>
+
 #include <Eigen/Dense>
 
 const float dt = 0.01f; // Time step
 const float gravity = 9.81f; // Gravity acceleration
 const float cohesionStrength = 0.1f; // Cohesion force factor
+
+MPMSolver::MPMSolver() :
+     stepSize(0.00001f)
+    , grid(Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.05f, Eigen::Vector3f(0.0f, 0.0f, 0.0f))
+    , critCompression(0.025f)
+    , critStretch(0.0075f)
+    , hardeningCoeff(10.0f)
+    , initialDensity(400.0f)
+    , youngsMod(140000.0f)
+    , poissonRatio(0.2f)
+{
+    mu0 = youngsMod / (2.f * (1.f + poissonRatio));
+    lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
+} 
+
 
 MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
@@ -13,46 +30,46 @@ MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gri
     initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio)
 {
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
-    lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) + (1.f - 2.f * poissonRatio));
+    lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
 }
 
-void MPMSolver::addParticle(const particle& particle) {
+void MPMSolver::addParticle(const MPMParticle& particle) {
     particles.push_back(particle);
 }
 
 
 // THIS IS ORIGINAL PARTICLE STUFF ?? IDK IT WAS HERE WHEN I GOT HERE
-//void MPMSolver::computeForcesAndIntegrate() {
-//    for (particle& p : particles) {
-//        Eigen::Vector3f force = computeGravity(p) + computeCohesion(p);
-//        integrate(p, force);
-//    }
-//}
-//
-//Eigen::Vector3f MPMSolver::computeGravity(const particle& p) {
-//    return Eigen::Vector3f(0.0, p.mass * gravity, 0.0);
-//}
-//
-//Eigen::Vector3f MPMSolver::computeCohesion(const particle& p) {
-//    Eigen::Vector3f cohesionForce(0.0, 0.0, 0.0);
-//    for (const particle& neighbor : particles) {
-//        if (&p == &neighbor) continue;
-//        Eigen::Vector3f diff = neighbor.position - p.position;
-//        float distance = diff.size();
-//        if (distance > 0 && distance < grid.spacing) {
-//            cohesionForce += (diff * (1.f / diff.size())) * cohesionStrength / distance;
-//        }
-//    }
-//    return cohesionForce;
-//}
-//
-//void MPMSolver::integrate(particle& p, Eigen::Vector3f force) {
-//    Eigen::Vector3f acceleration = force / p.mass;
-//    p.velocity += acceleration * dt;
-//    p.position += p.velocity * dt;
-//}
+void MPMSolver::computeForcesAndIntegrate() {
+    for (MPMParticle& p : particles) {
+        Eigen::Vector3f force = computeGravity(p) + computeCohesion(p);
+        integrate(p, force);
+    }
+}
 
-const vector<particle>& MPMSolver::getParticles() const {
+Eigen::Vector3f MPMSolver::computeGravity(const MPMParticle& p) {
+    return Eigen::Vector3f(0.0, p.mass * gravity, 0.0);
+}
+
+Eigen::Vector3f MPMSolver::computeCohesion(const MPMParticle& p) {
+    Eigen::Vector3f cohesionForce(0.0, 0.0, 0.0);
+    for (const MPMParticle& neighbor : particles) {
+        if (&p == &neighbor) continue;
+        Eigen::Vector3f diff = neighbor.position - p.position;
+        float distance = diff.size();
+        if (distance > 0 && distance < grid.spacing) {
+            cohesionForce += (diff * (1.f / diff.size())) * cohesionStrength / distance;
+        }
+    }
+    return cohesionForce;
+}
+
+void MPMSolver::integrate(MPMParticle& p, Eigen::Vector3f force) {
+    Eigen::Vector3f acceleration = force / p.mass;
+    p.velocity += acceleration * dt;
+    p.position += p.velocity * dt;
+}
+
+const std::vector<MPMParticle>& MPMSolver::getParticles() const {
     return particles;
 }
 
@@ -79,27 +96,38 @@ static float weightFun(float x) {
     }
 }
 
-static float weightFunGradient(float x) {
-    x = abs(x);
-    if (x > 0.f && x < 1.f) {
-        return 3.f * abs(x) / (2.f * x) - 2.f * x;
+// static float weightFunGradient (float x) {
+//     x = abs(x);
+//     if (x > 0.f && x < 1.f) {
+//         return 3.f*abs(x)/(2.f*x) - 2.f*x;
+//     } else if (x >= 1.f && x < 2.f) {
+//         return -abs(x)/(2.f*x)*x*x + 2.f*x - 2.f*(abs(x)/x);
+//     } else {
+//         return 0.0f;
+//     }
+// }
+
+static float weightFunGradient(float x)
+{
+    const float ax = std::abs(x);
+    const float s = (x < 0.f) ? -1.f : 1.f;
+    if (ax >= 2.f) {
+        return 0.f;
     }
-    else if (x >= 1.f && x < 2.f) {
-        return -abs(x) / (2.f * x) * x * x + 2.f * x - 2.f * (abs(x) / x);
+    if (ax < 1.f) {      // |x| < 1
+        return (1.5f * ax - 2.f) * s;
     }
-    else {
-        return 0.0f;
-    }
+    /* 1 <= |x| < 2 */
+    return (-0.5f * ax + 2.f - (2.f / 3.f)) * s;
 }
 
 // [======] PARTICLE FUNCTIONS [======]
 
 void MPMSolver::computeSigma() {
-    for (particle& p : particles) {
-        
-        Eigen::Matrix3f Fe = p.FE;// Eigen::Matrix3f::Identity();
-        Eigen::Matrix3f Fp = p.FP;// Eigen::Matrix3f::Identity();
-
+    for (MPMParticle& p : particles) {
+        // CONVERT GLM MATRIX TO EIGEN
+        Eigen::Matrix3f Fe = p.FE;
+        Eigen::Matrix3f Fp = p.FP;
 
         // COMPUTE POLAR DECOMP TO GET ROTATIONAL PART OF F
         Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -109,16 +137,35 @@ void MPMSolver::computeSigma() {
 
         float Je = Fe.determinant();  // Elastic volume
         float Jp = Fp.determinant();  // Plastic volume
+        float Jtot = (Fe * Fp).determinant(); // TOTAL DEFORMATION
 
-        float xi = 10.0f; // default value, tweak as needed
+        // Check if deformation determinant is negative (Flips particles inside out)
+        // Reset to keep sim stable
+        auto bad = [](float x) {
+            return (x <= 0.0f) || !std::isfinite(x);
+            };
+
+        if (bad(Je) || bad(Jp) || bad(Jtot))
+        {
+            //std::cout << "WAHOOO" << std::endl;
+            p.FE = Eigen::Matrix3f::Identity();
+            p.FP = Eigen::Matrix3f::Identity();
+            p.sigma = Eigen::Matrix3f::Zero();
+            continue;
+        }
+
+        float xi = hardeningCoeff;//10.0f; // default value, tweak as needed
 
         // Plastic-hardening-modified Lame parameters
         float mu = mu0 * std::exp(xi * (1.0f - Jp));
         float lambda = lambda0 * std::exp(xi * (1.0f - Jp));
 
         Eigen::Matrix3f strain = Fe - R;
-        Eigen::Matrix3f sigma = 2.0f * mu * strain + lambda * (Je - 1.0f) * Eigen::Matrix3f::Identity();
-        sigma *= (1.0f / Je); // Cauchy stress
+        // Eigen::Matrix3f sigma = 2.f * mu * strain + lambda * (Je - 1.0f) * Eigen::Matrix3f::Identity();
+        // sigma *= (1.f / Je); // Cauchy stress
+
+        Eigen::Matrix3f sigma = 2.f * mu * (Fe - R) + lambda * std::log(Je) * Eigen::Matrix3f::Identity();
+        sigma *= 1.f / Je;
 
         p.sigma = sigma;
     }
@@ -131,7 +178,7 @@ void MPMSolver::updateParticleDefGrad() {
     float yMin = grid.center[1] - 0.5f * grid.dimension[1];
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
 
-    for (particle& p : particles) {
+    for (MPMParticle& p : particles) {
         Eigen::Matrix3f velGrad = Eigen::Matrix3f::Zero();
 
         // WORLD SPACE POSITIONS
@@ -146,9 +193,9 @@ void MPMSolver::updateParticleDefGrad() {
         Eigen::Vector3f vPic = Eigen::Vector3f::Zero();
         Eigen::Vector3f vFlip = Eigen::Vector3f::Zero();
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -2; di < 2; di++) {
-            for (int dj = -2; dj < 2; dj++) {
-                for (int dk = -2; dk < 2; dk++) {
+        for (int di = -2; di <= 2; di++) {
+            for (int dj = -2; dj <= 2; dj++) {
+                for (int dk = -2; dk <= 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -177,9 +224,9 @@ void MPMSolver::updateParticleDefGrad() {
 
 
                     Eigen::Vector3f gradWeight;
-                    gradWeight[0] = 1.0f / grid.spacing * weightFunGradient(xGrid) * weightFun(yGrid) * weightFun(zGrid);
-                    gradWeight[1] = 1.0f / grid.spacing * weightFun(xGrid) * weightFunGradient(yGrid) * weightFun(zGrid);
-                    gradWeight[2] = 1.0f / grid.spacing * weightFun(xGrid) * weightFun(yGrid) * weightFunGradient(zGrid);
+                    gradWeight[0] = 1.f / grid.spacing * weightFunGradient(xGrid) * weightFun(yGrid) * weightFun(zGrid);
+                    gradWeight[1] = 1.f / grid.spacing * weightFun(xGrid) * weightFunGradient(yGrid) * weightFun(zGrid);
+                    gradWeight[2] = 1.f / grid.spacing * weightFun(xGrid) * weightFun(yGrid) * weightFunGradient(zGrid);
 
                     // THIS IS v * gradW^T
                     velGrad += curNode.velocity * gradWeight.transpose();
@@ -195,23 +242,26 @@ void MPMSolver::updateParticleDefGrad() {
         }
 
         vFlip += p.velocity;
-        float alpha = 0.95f; // Recommended 0.95
+        float alpha = 0.80f;
 
-        p.velocity = (1.0f - alpha) * vPic + alpha * vFlip;
+        p.velocity = (1.f - alpha) * vPic + alpha * vFlip;
+        const float damping = 0.01f;     // 1% velocity loss each step
+        p.velocity *= (1.0f - damping);
 
         // UPDATE DEFORMATION GRADIENT
         p.FE = (Eigen::Matrix3f::Identity() + stepSize * velGrad) * p.FE;
 
 
         // Predict the new total deformation gradient (FE * FP)
-        Eigen::Matrix3f F_total = (Eigen::Matrix3f::Identity() + stepSize * velGrad) * p.FE * p.FP;
+        //glm::mat3 F_total = (glm::mat3(1.0f) + stepSize * velGrad) * p.FE * p.FP;
 
         // Predict the new elastic deformation gradient
-        Eigen::Matrix3f FE_hat = (Eigen::Matrix3f::Identity() + stepSize * velGrad) * p.FE;
+        Eigen::Matrix3f FE_hat = p.FE;
 
-        // Convert to Eigen for SVD
+
         Eigen::Matrix3f FE_hat_eigen = FE_hat;
-        
+
+
         // SVD: FE_hat = U * Σ * V^T
         Eigen::JacobiSVD<Eigen::Matrix3f> svd(FE_hat_eigen, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Matrix3f U = svd.matrixU();
@@ -225,62 +275,73 @@ void MPMSolver::updateParticleDefGrad() {
 
         // Reconstruct clamped FE
         Eigen::Matrix3f Sigma_clamped = Eigen::Matrix3f::Zero();
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; ++i) {
             Sigma_clamped(i, i) = sigma_clamped[i];
-
+        }
+    
         Eigen::Matrix3f FE_new = U * Sigma_clamped * V.transpose();
-        Eigen::Matrix3f F_total_eigen = F_total;
+        Eigen::Matrix3f Fp_old = p.FP;
+        /*for (int c = 0; c < 3; ++c) {
+            for (int r = 0; r < 3; ++r) {
+                Fp_old(r, c) = p.FP[r][c];
+            }
+        }*/
 
+        // Eigen::Matrix3f F_total_eigen;
+        // for (int col = 0; col < 3; ++col)
+        //     for (int row = 0; row < 3; ++row)
+        //         F_total_eigen(row, col) = F_total[col][row];
 
         // Update FP using: FP = V * Σ⁻¹ * Uᵀ * F_total
         Eigen::Matrix3f Sigma_inv = Eigen::Matrix3f::Zero();
         for (int i = 0; i < 3; ++i)
             Sigma_inv(i, i) = 1.0f / sigma_clamped[i];
 
-        Eigen::Matrix3f FP_new = V * Sigma_inv * U.transpose() * F_total_eigen;
+        Eigen::Matrix3f F_tot_new = FE_new * Fp_old;
+        Eigen::Matrix3f FP_new = V * Sigma_inv * U.transpose() * F_tot_new;
 
         p.FE = FE_new;
         p.FP = FP_new;
- 
+
+
         // UPDATE POINT POSITIONS
         p.position += stepSize * p.velocity;
-
     }
 
-    Eigen::Vector3f minCorner = grid.center - 0.5f * grid.dimension;
-    Eigen::Vector3f maxCorner = grid.center + 0.5f * grid.dimension;
 
-    float damping = 0.001f; // or try 0.01f, 0.1f for bounciness
-    for (particle& p : particles) {
-        for (int axis = 0; axis < 3; ++axis) {
-            if (p.position[axis] < minCorner[axis]) {
-                p.position[axis] = minCorner[axis];
-                if (p.velocity[axis] < 0.f) {
-                    p.velocity[axis] *= -damping;
-                }
-            }
+    // glm::vec3 minCorner = grid.center - 0.5f * grid.dimension;
+    // glm::vec3 maxCorner = grid.center + 0.5f * grid.dimension;
 
-            if (p.position[axis] > maxCorner[axis]) {
-                p.position[axis] = maxCorner[axis];
-                if (p.velocity[axis] > 0.f) {
-                    p.velocity[axis] *= -damping;
-                }
-            }
-        }
-    }
+
+    // //THIS IS DOING NOTHING : :
+    // float damping = 0.0f; // or try 0.01f, 0.1f for bounciness
+    // for (MPMParticle &p : particles) {
+    //     for (int axis = 0; axis < 3; ++axis) {
+    //         if (p.position[axis] < minCorner[axis]) {
+    //             p.position[axis] = minCorner[axis];
+    //             if (p.velocity[axis] < 0.f) {
+    //                 p.velocity[axis] *= -damping;
+    //             }
+    //         }
+
+    //         if (p.position[axis] > maxCorner[axis]) {
+    //             p.position[axis] = maxCorner[axis];
+    //             if (p.velocity[axis] > 0.f) {
+    //                 p.velocity[axis] *= -damping;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
-
-
 // [======] GRID FUNCTIONS [======]
-
 void MPMSolver::particleToGridTransfer() {
     float xMin = grid.center[0] - 0.5f * grid.dimension[0];
     float yMin = grid.center[1] - 0.5f * grid.dimension[1];
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
 
-    grid.clearGrid();
-    for (particle& p : particles) {
+    //grid.clearGrid();
+    for (MPMParticle& p : particles) {
 
         // World space positions
         float x = p.position[0];
@@ -292,9 +353,9 @@ void MPMSolver::particleToGridTransfer() {
         int k = static_cast<int>(std::floor((z - zMin) / grid.spacing));
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -2; di < 2; di++) {
-            for (int dj = -2; dj < 2; dj++) {
-                for (int dk = -2; dk < 2; dk++) {
+        for (int di = -2; di <= 2; di++) {
+            for (int dj = -2; dj <= 2; dj++) {
+                for (int dk = -2; dk <= 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -312,7 +373,7 @@ void MPMSolver::particleToGridTransfer() {
                     // POSITION IN GRID SPACE
                     float xGrid = (x - curNode.worldPos[0]) / grid.spacing;
                     float yGrid = (y - curNode.worldPos[1]) / grid.spacing;
-                    float zGrid = (z - curNode.worldPos[2]) / grid.spacing;
+                    float zGrid = (z - curNode.worldPos[1]) / grid.spacing;
 
                     // WEIGHT OF GRID CELL RELATICE TO PARTICLE GRID
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
@@ -323,27 +384,27 @@ void MPMSolver::particleToGridTransfer() {
                     curNode.mass += p.mass * weight;
                     curNode.velocity += p.velocity * p.mass * weight;
 
-                    if (p.velocity.size() > 1e-6f) { // Only if velocity is non-zero
-                        curNode.velocityMass += curNode.mass;
-                    }
+                    // if (glm::length(p.velocity) > 1e-6f) { // Only if velocity is non-zero
+                    //     curNode.velocityMass += curNode.mass;
+                    // }
                 }
             }
         }
+
     }
 
-    // Normalize grid node velocities using only effective mass
-    for (GridNode& node : grid.gridNodes) {
-        if (node.velocityMass > 0.f) {
-            node.velocity /= node.velocityMass;
-        }
-        else {
-            node.velocity = Eigen::Vector3f(0.f);
-        }
-    }
+    // // Normalize grid node velocities using only effective mass
+    // for (GridNode& node : grid.gridNodes) {
+    //     if (node.velocityMass > 0.f) {
+    //         node.velocity /= node.velocityMass;
+    //     } else {
+    //         node.velocity = glm::vec3(0.f);
+    //     }
+    // }
 
     // Currently the velocity stored is actually the total weighted momentum
     // To convert it to actual vel we divide each gridCell by its mass
-    //grid.divideMass();
+    grid.divideMass();
 }
 
 // THIS SHOULD ONLY BE CALLED ONCE AT t=0
@@ -352,8 +413,8 @@ void MPMSolver::computeInitialDensity() {
     float yMin = grid.center[1] - 0.5f * grid.dimension[1];
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
 
-    grid.clearGrid();
-    for (particle& p : particles) {
+    //grid.clearGrid();
+    for (MPMParticle& p : particles) {
         // World space positions
         float x = p.position[0];
         float y = p.position[1];
@@ -364,9 +425,9 @@ void MPMSolver::computeInitialDensity() {
         int k = static_cast<int>(std::floor((z - zMin) / grid.spacing));
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -2; di < 2; di++) {
-            for (int dj = -2; dj < 2; dj++) {
-                for (int dk = -2; dk < 2; dk++) {
+        for (int di = -2; di <= 2; di++) {
+            for (int dj = -2; dj <= 2; dj++) {
+                for (int dk = -2; dk <= 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -376,7 +437,6 @@ void MPMSolver::computeInitialDensity() {
                     if (iNode < 0 || iNode >= grid.nx) continue;
                     if (jNode < 0 || jNode >= grid.ny) continue;
                     if (kNode < 0 || kNode >= grid.nz) continue;
-
 
                     int idx = iNode + grid.nx * (jNode + grid.ny * kNode);
                     GridNode& curNode = grid.gridNodes[idx];
@@ -400,11 +460,13 @@ void MPMSolver::computeInitialDensity() {
     // COMPUTE GRID DENSITY
     float volume = grid.spacing * grid.spacing * grid.spacing;
     for (GridNode& g : grid.gridNodes) {
-        g.density = (g.mass / volume);
+        if (volume != 0.0) {
+            g.density = (g.mass / volume);
+        }
     }
 
     // TRANSFER GRID DENSITY TO PARTICLES
-    for (particle& p : particles) {
+    for (MPMParticle& p : particles) {
         // World space positions
         float x = p.position[0];
         float y = p.position[1];
@@ -416,9 +478,9 @@ void MPMSolver::computeInitialDensity() {
 
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -2; di < 2; di++) {
-            for (int dj = -2; dj < 2; dj++) {
-                for (int dk = -2; dk < 2; dk++) {
+        for (int di = -2; di <= 2; di++) {
+            for (int dj = -2; dj <= 2; dj++) {
+                for (int dk = -2; dk <= 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -465,7 +527,7 @@ void MPMSolver::computeForce() {
     // UPDATE CAUCHY STRESS FOR EACH PARTICLE
     computeSigma();
 
-    for (particle& p : particles) {
+    for (MPMParticle& p : particles) {
         // World space positions
         float x = p.position[0];
         float y = p.position[1];
@@ -477,9 +539,9 @@ void MPMSolver::computeForce() {
 
 
         // YOU NEED TO DO THIS FOR ALL CELLS WITHIN SOME RADIUS
-        for (int di = -2; di < 2; di++) {
-            for (int dj = -2; dj < 2; dj++) {
-                for (int dk = -2; dk < 2; dk++) {
+        for (int di = -1; di < 2; di++) {
+            for (int dj = -1; dj < 2; dj++) {
+                for (int dk = -1; dk < 2; dk++) {
                     // INDEX OF CURRENT NODE WE ARE LOOKING AT
                     int iNode = i + di;
                     int jNode = j + dj;
@@ -503,7 +565,10 @@ void MPMSolver::computeForce() {
                     gradWeight[1] = 1.f / grid.spacing * weightFun(xGrid) * weightFunGradient(yGrid) * weightFun(zGrid);
                     gradWeight[2] = 1.f / grid.spacing * weightFun(xGrid) * weightFun(yGrid) * weightFunGradient(zGrid);
 
-                    curNode.force -= (p.volume * p.sigma * gradWeight + (Eigen::Vector3f(0.f, gravity, 0.f) * p.mass));
+                    float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
+                    //
+                    curNode.force -= (p.volume * p.sigma * gradWeight);
+                    curNode.force += weight * Eigen::Vector3f(0.f, -gravity, 0.f) * p.mass;
                 }
             }
         }
@@ -528,65 +593,13 @@ void MPMSolver::updateGridVel() {
 
             // VERY SIMPLE BOUNDING COLLISION
             // CLAMP VELOCITY AT BOUNDS
-            if (g.worldPos[0] <= minCorner[0] || g.worldPos[0] >= maxCorner[0]) {
-                g.velocity[0] = 0.f;
-            }
-
-            if (g.worldPos[1] <= minCorner[1] || g.worldPos[1] >= maxCorner[1]) {
-                g.velocity[1] = 0.f;
-            }
-
-            if (g.worldPos[2] <= minCorner[2] || g.worldPos[2] >= maxCorner[2]) {
-                g.velocity[2] = 0.f;
+            for (int i = 0; i < 3; i++) {
+                if (g.worldPos[i] <= minCorner[i] || g.worldPos[i] >= maxCorner[i]) {
+                    g.velocity[i] = 0.f;
+                }
             }
         }
     }
-
-    // const int n = grid.gridNodes.size();
-    // std::vector<Vector3> b(n);          // RHS vector (h * force)
-    // std::vector<Vector3> deltaV(n, Vector3(0.0f)); // Unknown we're solving for
-
-    // // Assemble right-hand side: b = h * f
-    // for (int i = 0; i < n; ++i) {
-    //     GridNode& g = grid.gridNodes[i];
-    //     if (g.mass > 0.f) {
-    //         b[i] = stepSize * g.force;
-    //     }
-    // }
-
-
-    // // Conjugate Gradient Solver to solve:
-    // // (M - h² * K) * deltaV = b
-    // // Matrix-vector multiply is done by a custom function applySystemMatrix()
-
-    // const int maxIters = 100;
-    // const float tol = 1e-5;
-
-    // conjugateGradientSolve(
-    //     deltaV,
-    //     b,
-    //     [&](const std::vector<Vector3>& x) {
-    //         return applySystemMatrix(x);
-    //     },
-    //     maxIters,
-    //     tol
-    //     );
-
-    // // Apply deltaV to get new velocities
-    // for (int i = 0; i < n; ++i) {
-    //     GridNode& g = grid.gridNodes[i];
-    //     if (g.mass > 0.f) {
-    //         g.velocity += deltaV[i];
-
-    //         // BOUNDING COLLISION (as before)
-    //         if (g.worldPos.x <= minCorner.x || g.worldPos.x >= maxCorner.x)
-    //             g.velocity.x = 0.f;
-    //         if (g.worldPos.y <= minCorner.y || g.worldPos.y >= maxCorner.y)
-    //             g.velocity.y = 0.f;
-    //         if (g.worldPos.z <= minCorner.z || g.worldPos.z >= maxCorner.z)
-    //             g.velocity.z = 0.f;
-    //     }
-    // }
 }
 
 

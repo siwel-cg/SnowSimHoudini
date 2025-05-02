@@ -99,20 +99,20 @@ namespace HDK_Sample {
         fpreal POISSON(fpreal t) { return evalFloat("poisson", 0, t); }
 
         // SIMULATION TAB
-        Eigen::Vector3f GRAVITY(fpreal t) {
-            return Eigen::Vector3f(
-                evalFloat("gravity", 0, t),
-                evalFloat("gravity", 1, t),
-                evalFloat("gravity", 2, t)
-            );
-        }
-        Eigen::Vector3f GROUND_PLANE(fpreal t) {
-            return Eigen::Vector3f(
-                evalFloat("ground_plane", 0, t),
-                evalFloat("ground_plane", 1, t),
-                evalFloat("ground_plane", 2, t)
-            );
-        }
+        //Eigen::Vector3f GRAVITY(fpreal t) {
+        //    return Eigen::Vector3f(
+        //        evalFloat("gravity", 0, t),
+        //        evalFloat("gravity", 1, t),
+        //        evalFloat("gravity", 2, t)
+        //    );
+        //}
+        //Eigen::Vector3f GROUND_PLANE(fpreal t) {
+        //    return Eigen::Vector3f(
+        //        evalFloat("ground_plane", 0, t),
+        //        evalFloat("ground_plane", 1, t),
+        //        evalFloat("ground_plane", 2, t)
+        //    );
+        //}
 
 
         int RESET_CACHE(fpreal t) { return evalInt("reset_cache", 0, t); }

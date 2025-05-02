@@ -57,12 +57,12 @@ newSopOperator(OP_OperatorTable *table)
 static PRM_Name dummyName("dumb", "BigDumb");
 
 //Material Properties Tab
-static PRM_Name compressionName("crit_compression", "Critical Compression");
-static PRM_Name stretchName("crit_stretch", "Critical Stretch");
-static PRM_Name hardeningName("hardening", "Hardening Coefficient");
-static PRM_Name densityName("init_density", "Initial Density");
-static PRM_Name youngName("young_modulus", "Initial Young's Modulus");
-static PRM_Name poissonName("poisson", "Poisson's Ratio");
+static PRM_Name compressionName("crit_compression", "Squash Limit");
+static PRM_Name stretchName("crit_stretch", "Squash Limit");
+static PRM_Name hardeningName("hardening", "Cohesion");
+static PRM_Name densityName("init_density", "Density");
+static PRM_Name youngName("young_modulus", "Stiffness");
+static PRM_Name poissonName("poisson", "Squishiness");
 
 // Simulation Tab
 //static PRM_Name gravityName("gravity", "Gravity Force");

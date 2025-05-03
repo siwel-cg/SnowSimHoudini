@@ -49,11 +49,6 @@ newSopOperator(OP_OperatorTable *table)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//PUT YOUR CODE HERE
-//You need to declare your parameters here
-//Example to declare a variable for angle you can do like this :
-//static PRM_Name		angleName("angle", "Angle");
-
 //Material Properties Tab
 static PRM_Name compressionName("crit_compression", "Squash Limit");
 static PRM_Name stretchName("crit_stretch", "Squash Limit");
@@ -71,14 +66,6 @@ static PRM_Name poissonName("poisson", "Squishiness");
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//				     ^^^^^^^^    ^^^^^^^^^^^^^^^
-//				     internal    descriptive version
-
-
-// PUT YOUR CODE HERE
-// You need to setup the initial/default values for your parameters here
-// For example : If you are declaring the inital value for the angle parameter
-// static PRM_Default angleDefault(30.0);	
 
 
 //// DEFAULT VALUES
@@ -103,7 +90,6 @@ static PRM_Default poissonDefault(0.2);
 // RANGES
 static PRM_Range positiveRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 10000.0);
 static PRM_Range poissonRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 0.5);
-
 
 
 
@@ -278,10 +264,27 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 		return error();
 	}
 
+	//float separation = PARTICLE_SEP(now);
+	float critCompression = CRIT_COMPRESSION(now);
+	float critStretch = CRIT_STRETCH(now);
+	float hardening = HARDENING(now);
+	float initDensity = INIT_DENSITY(now);
+	float youngModulus = YOUNG_MODULUS(now);
+	float poisson = POISSON(now);
+
 	if (frame <= 1) {
 		// RESET SOLVER 
+
+		/*MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
+			float critCompression, float critStretch,
+			float hardeningCoeff, float initialDensity, float youngsMod,
+			float poissonRatio);*/
+
+		/*solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
+				 0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
+
 		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
-				 0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
+			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {

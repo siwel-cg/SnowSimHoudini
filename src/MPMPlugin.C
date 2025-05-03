@@ -82,7 +82,7 @@ static PRM_Default poissonDefault(0.4);
 ////////////////////////////////////////////
 
 static PRM_Default timestepDefault(0.001);
-static PRM_Default groundDefault(0.0);
+static PRM_Default groundDefault(-2.5);
 //Default for vector parameters
 static PRM_Default boundSizeDefault[] = {
 	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
@@ -214,7 +214,7 @@ bool SOP_SnowSim::isTimeDependent() const
 
 #if 1
 OP_ERROR
-SOP_SnowSim::cookMySop(OP_Context &context)
+SOP_SnowSim::cookMySop(OP_Context& context)
 {
 	flags().setTimeDep(true);
 	fpreal now = context.getTime();
@@ -251,11 +251,11 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 			float hardeningCoeff, float initialDensity, float youngsMod,
 			float poissonRatio);*/
 
-		/*solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
-				 0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
+		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
+					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
 
-		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
-			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);
+		/*solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
+			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);*/
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {
@@ -275,7 +275,7 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 		prevFrame = 1;
 	}
 
-	
+
 	for (int f = prevFrame + 1; f <= frame; ++f) {
 		solver.step();
 	}
@@ -286,33 +286,47 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 	gdp->clearAndDestroy();
 
 	// INSTATIATE THE POINTS IN SPACE
-	for each(MPMParticle p in solver.getParticles()) 
-	{	
+	for each(MPMParticle p in solver.getParticles())
+	{
 		Eigen::Vector3f pos = p.position;
 		GA_Offset pt = gdp->appendPoint();
 		gdp->setPos3(pt, UT_Vector3(pos.x(), pos.y(), pos.z()));
 	}
-	
+
 
 	// GROUND PLANE
-
-	/*UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
 	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
+	UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
 
-	GA_Offset gp[4];
-	gp[0] = gdp->appendPoint(); gdp->setPos3(gp[0], UT_Vector3(center.x() - half.x(), groundPlane, center.z() - half.z()));
-	gp[1] = gdp->appendPoint(); gdp->setPos3(gp[1], UT_Vector3(center.x() + half.x(), groundPlane, center.z() - half.z()));
-	gp[2] = gdp->appendPoint(); gdp->setPos3(gp[2], UT_Vector3(center.x() + half.x(), groundPlane, center.z() + half.z()));
-	gp[3] = gdp->appendPoint(); gdp->setPos3(gp[3], UT_Vector3(center.x() - half.x(), groundPlane, center.z() + half.z()));
 
-	{
-		GU_PrimPoly* quad = GU_PrimPoly::build(gdp, true);
-		for (int i = 0; i < 4; ++i) quad->appendVertex(gp[i]);
-		quad->close();
-	}*/
+	// BOUNDING BOX ( ONLY SHOW AT INITIALIZATION )
+	if (frame == 1) {
+		GA_Offset bb[8];
+		for (int k = 0; k < 2; ++k) {
+			for (int j = 0; j < 2; ++j) {
+				for (int i = 0; i < 2; ++i) {
+					int idx = i + 2 * (j + 2 * k);
+					bb[idx] = gdp->appendPoint();
+					UT_Vector3 p(
+						center.x() + (i ? half.x() : -half.x()),
+						center.y() + (j ? half.y() : -half.y()),
+						center.z() + (k ? half.z() : -half.z())
+					);
+					gdp->setPos3(bb[idx], p);
+				}
+			}
+		}
 
-	// BOUNDING BOX
+		auto drawEdge = [&](int a, int b) {
+			GU_PrimPoly* line = GU_PrimPoly::build(gdp, false);
+			line->appendVertex(bb[a]);
+			line->appendVertex(bb[b]);
+			};
 
+		drawEdge(0, 1); drawEdge(1, 3); drawEdge(3, 2); drawEdge(2, 0); // bottom
+		drawEdge(4, 5); drawEdge(5, 7); drawEdge(7, 6); drawEdge(6, 4); // top
+		drawEdge(0, 4); drawEdge(1, 5); drawEdge(2, 6); drawEdge(3, 7); // sides
+	}
 
 
 

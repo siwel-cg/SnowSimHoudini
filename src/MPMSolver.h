@@ -13,7 +13,7 @@ class MPMSolver
 {
 public:
     MPMSolver();
-    MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
+    MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
         float poissonRatio);
@@ -22,7 +22,6 @@ public:
 
 	const std::vector<MPMParticle>& getParticles() const;
     
-
     float stepSize;
     float critCompression;
     float critStretch;
@@ -30,6 +29,8 @@ public:
     float initialDensity;
     float youngsMod;
     float poissonRatio;
+
+    float groundPlaneY;
 
     float mu0;
     float lambda0;

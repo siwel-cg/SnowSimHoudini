@@ -50,75 +50,91 @@ newSopOperator(OP_OperatorTable *table)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Material Properties Tab
-static PRM_Name compressionName("crit_compression", "Squash Limit");
-static PRM_Name stretchName("crit_stretch", "Squash Limit");
-static PRM_Name hardeningName("hardening", "Cohesion");
+static PRM_Name compressionName("crit_compression", "CritCompression");
+static PRM_Name stretchName("crit_stretch", "CritStretch");
+static PRM_Name hardeningName("hardening", "Hardening");
 static PRM_Name densityName("init_density", "Density");
-static PRM_Name youngName("young_modulus", "Stiffness");
-static PRM_Name poissonName("poisson", "Squishiness");
+static PRM_Name youngName("young_modulus", "YoungsMod");
+static PRM_Name poissonName("poisson", "Poisson");
 
 // Simulation Tab
 //static PRM_Name gravityName("gravity", "Gravity Force");
-//static PRM_Name groundName("ground_plane", "Ground Plane");
+static PRM_Name timeStepName("dt", "Time Step");
+static PRM_Name groundName("ground_plane", "Ground Plane");
+static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
+static PRM_Name boundsPosName("sim_pos", "Simulation Position");
 //static PRM_Name resetName("reset_cache", "Reset Cache");
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //// DEFAULT VALUES
-static PRM_Default compressionDefault(2.5);
-static PRM_Default stretchDefault(1.5);
+static PRM_Default compressionDefault(0.05);
+static PRM_Default stretchDefault(0.005);
 static PRM_Default hardeningDefault(10.0);
-static PRM_Default densityDefault(1000.0);
-static PRM_Default youngDefault(1e5);
-static PRM_Default poissonDefault(0.2);
-// 
+static PRM_Default densityDefault(600.0);
+static PRM_Default youngDefault(180000);
+static PRM_Default poissonDefault(0.4);
 
-//
+
+
+////////////////////////////////////////////
+
+static PRM_Default timestepDefault(0.001);
+static PRM_Default groundDefault(0.0);
 //Default for vector parameters
-//static PRM_Default gravityDefault[] = {
-//	PRM_Default(0.0), PRM_Default(-9.8), PRM_Default(0.0)
-//};
-//static PRM_Default groundDefault[] = {
-//	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
-//};
+static PRM_Default boundSizeDefault[] = {
+	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
+};
+static PRM_Default boundPosDefault[] = {
+	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
+};
 
 
 // RANGES
-static PRM_Range positiveRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 10000.0);
-static PRM_Range poissonRange(PRM_RANGE_PRM, 0.0, PRM_RANGE_UI, 0.5);
+static PRM_Range compressionRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1.0);
+static PRM_Range stretchRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1.0);
+static PRM_Range hardeningRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range densityRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1000.0);
+static PRM_Range youngRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1e6);
+static PRM_Range poissonRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.499);
+
+static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
+static PRM_Range groundRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+
 
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-
 PRM_Template
 SOP_SnowSim::myTemplateList[] = {
-	// PUT YOUR CODE HERE
-	// You now need to fill this template with your parameter name and their default value
-	// EXAMPLE : For the angle parameter this is how you should add into the template
-	// PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
-	// Similarly add all the other parameters in the template format here
 
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &positiveRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &positiveRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &positiveRange),
+
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &compressionRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &stretchRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &hardeningRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &densityRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &youngRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
+
+	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
+	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
+	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
+	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
+
+
+
 
 
 	//PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &gravityName, gravityDefault),
 	//PRM_Template(PRM_FLT_J, PRM_Template::PRM_EXPORT_MIN, 3, &groundName, groundDefault),
 
 	//PRM_Template(PRM_TOGGLE, 1, &resetName, 0), // reset cache button
-
-	
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,58 +195,8 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 
 
 	// INITILIZE MPM SOLVER
-	solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
-		0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
-
-	
-	//// THESE ARE HARD CODED BASE POINTS
-	//// UPDATE WITH READ IN GEOMETRY
-	//float spacing = 0.14f;
-	//Eigen::Vector3f dim = Eigen::Vector3f(12.f, 12.f, 12.f);
-	//Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
-	//origin *= spacing * -0.5;
-
-	// CUBE 
-	/*for (int i = 0; i < dim[0]; ++i)
-	{
-		for (int j = 0; j < dim[1]; ++j)
-		{
-			for (int k = 0; k < dim[2]; ++k)
-			{
-				float x = origin[0] + i * spacing;
-				float y = origin[1] + j * spacing;
-				float z = origin[2] + k * spacing;
-				solver.addParticle(MPMParticle::MPMParticle(Eigen::Vector3f(x, y, z), Eigen::Vector3f(0.0f, -5.0f, 0.0f), 1.0f));
-			}
-		}
-	}*/
-
-	//float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
-	//Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
-
-	//for (int i = 0; i < dim.x(); ++i) {
-	//	for (int j = 0; j < dim.y(); ++j) {
-	//		for (int k = 0; k < dim.z(); ++k) {
-	//			// world‐space position of this cell
-	//			Eigen::Vector3f pos;
-	//			pos.x() = origin.x() + i * spacing;
-	//			pos.y() = origin.y() + j * spacing;
-	//			pos.z() = origin.z() + k * spacing;
-
-	//			// 4) test distance to center
-	//			if ((pos - center).norm() <= radius) {
-	//				solver.addParticle(MPMParticle(pos,Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f));
-	//			}
-	//		}
-	//	}
-	//}
-
-
-
+	solver = MPMSolver();
 	solver.computeInitialDensity();
-
-	//solver = MPMSolver();
-	
 }
 
 SOP_SnowSim::~SOP_SnowSim() {}
@@ -272,6 +238,11 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 	float youngModulus = YOUNG_MODULUS(now);
 	float poisson = POISSON(now);
 
+	float timeStep = TIME_STEP(now);
+	float groundPlane = GROUND_PLANE(now);
+	Eigen::Vector3f boundsSize = Eigen::Vector3f(BOUNDS_SIZE(now)[0], BOUNDS_SIZE(now)[1], BOUNDS_SIZE(now)[2]);
+	Eigen::Vector3f boundsPos = Eigen::Vector3f(BOUNDS_POS(now)[0], BOUNDS_POS(now)[1], BOUNDS_POS(now)[2]);
+
 	if (frame <= 1) {
 		// RESET SOLVER 
 
@@ -283,7 +254,7 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 		/*solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
 				 0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
 
-		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
+		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
 			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
@@ -300,33 +271,6 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 		}
 
 
-		// SPHERE 
-		//float spacing = 0.14f;
-		//Eigen::Vector3f dim = Eigen::Vector3f(12.f, 12.f, 12.f);
-		//Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
-		//origin *= spacing * -0.5;
-
-		//float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
-		//Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
-
-		//for (int i = 0; i < dim.x(); ++i) {
-		//	for (int j = 0; j < dim.y(); ++j) {
-		//		for (int k = 0; k < dim.z(); ++k) {
-		//			// world‐space position of this cell
-		//			Eigen::Vector3f pos;
-		//			pos.x() = origin.x() + i * spacing;
-		//			pos.y() = origin.y() + j * spacing;
-		//			pos.z() = origin.z() + k * spacing;
-
-		//			// 4) test distance to center
-		//			if ((pos - center).norm() <= radius) {
-		//				solver.addParticle(MPMParticle(pos, Eigen::Vector3f(0.0f, -8.0f, 0.0f), 1.0f));
-		//			}
-		//		}
-		//	}
-		//}
-
-
 		solver.computeInitialDensity();
 		prevFrame = 1;
 	}
@@ -341,7 +285,7 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 
 	gdp->clearAndDestroy();
 
-	// THIS WILL INSTATIATE THE POINTS IN SPACE
+	// INSTATIATE THE POINTS IN SPACE
 	for each(MPMParticle p in solver.getParticles()) 
 	{	
 		Eigen::Vector3f pos = p.position;
@@ -350,56 +294,27 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 	}
 	
 
-	/*float separation = PARTICLE_SEP(now);
-	float critCompression = CRIT_COMPRESSION(now);
-	float critStretch = CRIT_STRETCH(now);
-	float hardening = HARDENING(now);
-	float initDensity = INIT_DENSITY(now);
-	float youngModulus = YOUNG_MODULUS(now);
-	float poisson = POISSON(now);
+	// GROUND PLANE
 
-	Eigen::Vector3f gravity = GRAVITY(now);
-	Eigen::Vector3f ground_plane = GROUND_PLANE(now);
+	/*UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
+	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
 
-	int resetCache = RESET_CACHE(now);*/
+	GA_Offset gp[4];
+	gp[0] = gdp->appendPoint(); gdp->setPos3(gp[0], UT_Vector3(center.x() - half.x(), groundPlane, center.z() - half.z()));
+	gp[1] = gdp->appendPoint(); gdp->setPos3(gp[1], UT_Vector3(center.x() + half.x(), groundPlane, center.z() - half.z()));
+	gp[2] = gdp->appendPoint(); gdp->setPos3(gp[2], UT_Vector3(center.x() + half.x(), groundPlane, center.z() + half.z()));
+	gp[3] = gdp->appendPoint(); gdp->setPos3(gp[3], UT_Vector3(center.x() - half.x(), groundPlane, center.z() + half.z()));
+
+	{
+		GU_PrimPoly* quad = GU_PrimPoly::build(gdp, true);
+		for (int i = 0; i < 4; ++i) quad->appendVertex(gp[i]);
+		quad->close();
+	}*/
+
+	// BOUNDING BOX
 
 
-	// THIS IS JUST A TEST TO SEE IF I CAN GET THE INPUT GEO
-#if 0
-	gdp->clearAndDestroy();
 
-	// Check if we have inputs before trying to lock
-	if (nInputs() > 0) {
-		// Try to get the input without locking first
-		const GU_Detail* input0 = inputGeo(0, context);
-
-		if (input0) {
-			// If we have valid input, duplicate it to our gdp
-			gdp->duplicate(*input0);
-
-			// Now we can process the points
-			GA_Offset ptoff;
-			GA_FOR_ALL_PTOFF(gdp, ptoff) {
-				UT_Vector3 pos = gdp->getPos3(ptoff);
-				// Modify position if needed
-				 pos.y() += 1.0;  // Example: move points up by 1
-				 gdp->setPos3(ptoff, pos);
-			}
-		}
-		else {
-			// Create some default geometry when no input is connected
-			addWarning(SOP_MESSAGE, "No valid input connected. Creating default point.");
-			GA_Offset pt = gdp->appendPoint();
-			gdp->setPos3(pt, UT_Vector3(0, 0, 0));
-		}
-	}
-	else {
-		// Create default geometry when there are no inputs
-		addWarning(SOP_MESSAGE, "No inputs connected. Creating default point.");
-		GA_Offset pt = gdp->appendPoint();
-		gdp->setPos3(pt, UT_Vector3(0, 0, 0));
-	}
-#endif
 
 
 

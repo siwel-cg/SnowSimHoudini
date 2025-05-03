@@ -98,24 +98,17 @@ namespace HDK_Sample {
         fpreal YOUNG_MODULUS(fpreal t) { return evalFloat("young_modulus", 0, t); }
         fpreal POISSON(fpreal t) { return evalFloat("poisson", 0, t); }
 
-        // SIMULATION TAB
-        //Eigen::Vector3f GRAVITY(fpreal t) {
-        //    return Eigen::Vector3f(
-        //        evalFloat("gravity", 0, t),
-        //        evalFloat("gravity", 1, t),
-        //        evalFloat("gravity", 2, t)
-        //    );
-        //}
-        //Eigen::Vector3f GROUND_PLANE(fpreal t) {
-        //    return Eigen::Vector3f(
-        //        evalFloat("ground_plane", 0, t),
-        //        evalFloat("ground_plane", 1, t),
-        //        evalFloat("ground_plane", 2, t)
-        //    );
-        //}
+		// SIMULATION TAB
+		fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
+        fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
 
+        UT_Vector3 BOUNDS_SIZE(fpreal t) {
+            return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
+        }
 
-        int RESET_CACHE(fpreal t) { return evalInt("reset_cache", 0, t); }
+        UT_Vector3 BOUNDS_POS(fpreal t) {
+            return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
+        }
 
     };
 } // End HDK_Sample namespace

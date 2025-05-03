@@ -17,15 +17,16 @@ MPMSolver::MPMSolver() :
     , youngsMod(140000.0f)
     , poissonRatio(0.2f)
 {
+    groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
 } 
 
 
-MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
+MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
     float initialDensity, float youngsMod, float poissonRatio)
-    : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)),
+    : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)), groundPlaneY(groundPlane),
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
     initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio)
 {
@@ -594,6 +595,9 @@ void MPMSolver::updateGridVel() {
             // VERY SIMPLE BOUNDING COLLISION
             // CLAMP VELOCITY AT BOUNDS
             for (int i = 0; i < 3; i++) {
+                if (i == 1 && g.worldPos[1] <= groundPlaneY) {
+                    g.velocity[i] = 0.f;
+                }
                 if (g.worldPos[i] <= minCorner[i] || g.worldPos[i] >= maxCorner[i]) {
                     g.velocity[i] = 0.f;
                 }

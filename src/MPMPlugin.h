@@ -86,7 +86,7 @@ namespace HDK_Sample {
         int		myTotalPoints;
 
         
-        int lastFrameSimulated = -1;
+        int     prevFrame;
 
 
         // MATERIAL PROPERTIES TAB

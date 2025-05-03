@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 
 const float dt = 0.01f; // Time step
-const float gravity = 9.81f; // Gravity acceleration
+const float gravity = 30.81f; // Gravity acceleration
 const float cohesionStrength = 0.1f; // Cohesion force factor
 
 MPMSolver::MPMSolver() :

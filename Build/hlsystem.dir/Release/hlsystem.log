@@ -5,14 +5,3 @@
      Creating library C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.lib and object C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.exp
   hlsystem.vcxproj -> C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\Build\bin\Release\hlsystem.dll
   Copying hlsystem.dll to CUSTOM_DSO_PATH directory
-  Error copying file (if different) from "C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/bin/Release/hlsystem.dll" to "C:\Users\lewis\OneDrive\Documents\houdini20.5\dso".
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: The command "setlocal
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/bin/Release/hlsystem.dll C:\Users\lewis\OneDrive\Documents\houdini20.5\dso
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: if %errorlevel% neq 0 goto :cmEnd
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: :cmEnd
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: :cmErrorLevel
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: exit /b %1
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: :cmDone
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: if %errorlevel% neq 0 goto :VCEnd
-C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): error MSB3073: :VCEnd" exited with code 1.

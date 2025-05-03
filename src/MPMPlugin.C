@@ -41,7 +41,7 @@ newSopOperator(OP_OperatorTable *table)
 			    "SnowSim",			// UI name
 				 SOP_SnowSim::myConstructor,	// How to build the SOP
 				 SOP_SnowSim::myTemplateList,	// My parameters
-			     0,				// Min # of sources
+			     1,				// Min # of sources
 			     1,				// Max # of sources
 				 SOP_SnowSim::myVariables,	// Local variables
 				 OP_FLAG_GENERATOR)
@@ -53,8 +53,6 @@ newSopOperator(OP_OperatorTable *table)
 //You need to declare your parameters here
 //Example to declare a variable for angle you can do like this :
 //static PRM_Name		angleName("angle", "Angle");
-
-static PRM_Name dummyName("dumb", "BigDumb");
 
 //Material Properties Tab
 static PRM_Name compressionName("crit_compression", "Squash Limit");
@@ -83,7 +81,6 @@ static PRM_Name poissonName("poisson", "Squishiness");
 // static PRM_Default angleDefault(30.0);	
 
 
-static PRM_Default dummyDefault(0.0);
 //// DEFAULT VALUES
 static PRM_Default compressionDefault(2.5);
 static PRM_Default stretchDefault(1.5);
@@ -121,9 +118,6 @@ SOP_SnowSim::myTemplateList[] = {
 	// EXAMPLE : For the angle parameter this is how you should add into the template
 	// PRM_Template(PRM_FLT,	PRM_Template::PRM_EXPORT_MIN, 1, &angleName, &angleDefault, 0),
 	// Similarly add all the other parameters in the template format here
-
-
-	PRM_Template(PRM_FLT, 1, &dummyName, 0),
 
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &positiveRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &positiveRange),
@@ -195,19 +189,20 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 	: SOP_Node(net, name, op)
 {
     myCurrPoint = -1;	// To prevent garbage values from being returned
+	prevFrame = -1; 
+
 
 	// INITILIZE MPM SOLVER
 	solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
 		0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
 
-	//
-
+	
 	//// THESE ARE HARD CODED BASE POINTS
 	//// UPDATE WITH READ IN GEOMETRY
-	float spacing = 0.14f;
-	Eigen::Vector3f dim = Eigen::Vector3f(12.f, 12.f, 12.f);
-	Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
-	origin *= spacing * -0.5;
+	//float spacing = 0.14f;
+	//Eigen::Vector3f dim = Eigen::Vector3f(12.f, 12.f, 12.f);
+	//Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
+	//origin *= spacing * -0.5;
 
 	// CUBE 
 	/*for (int i = 0; i < dim[0]; ++i)
@@ -224,25 +219,25 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 		}
 	}*/
 
-	float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
-	Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
+	//float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
+	//Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
 
-	for (int i = 0; i < dim.x(); ++i) {
-		for (int j = 0; j < dim.y(); ++j) {
-			for (int k = 0; k < dim.z(); ++k) {
-				// world‐space position of this cell
-				Eigen::Vector3f pos;
-				pos.x() = origin.x() + i * spacing;
-				pos.y() = origin.y() + j * spacing;
-				pos.z() = origin.z() + k * spacing;
+	//for (int i = 0; i < dim.x(); ++i) {
+	//	for (int j = 0; j < dim.y(); ++j) {
+	//		for (int k = 0; k < dim.z(); ++k) {
+	//			// world‐space position of this cell
+	//			Eigen::Vector3f pos;
+	//			pos.x() = origin.x() + i * spacing;
+	//			pos.y() = origin.y() + j * spacing;
+	//			pos.z() = origin.z() + k * spacing;
 
-				// 4) test distance to center
-				if ((pos - center).norm() <= radius) {
-					solver.addParticle(MPMParticle(pos,Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f));
-				}
-			}
-		}
-	}
+	//			// 4) test distance to center
+	//			if ((pos - center).norm() <= radius) {
+	//				solver.addParticle(MPMParticle(pos,Eigen::Vector3f(0.0f, 0.0f, 0.0f),1.0f));
+	//			}
+	//		}
+	//	}
+	//}
 
 
 
@@ -269,63 +264,79 @@ bool SOP_SnowSim::isTimeDependent() const
 OP_ERROR
 SOP_SnowSim::cookMySop(OP_Context &context)
 {
+	flags().setTimeDep(true);
 	fpreal now = context.getTime();
 	int frame = context.getFrame();
 
-	//std::cout << "Frame =  " << frame << std::endl;
 
-	float dummy = evalFloat("dumb", 0, context.getTime());
-	//std::cout << "Frame: " << context.getFrame() << " (dummy = " << dummy << ")" << std::endl;
+	// TEST INPUT SOURCE
+	lockInputs(context);
+	const GU_Detail* inGdp = inputGeo(0, context);
+	if (!inGdp) {
+		UTprintf("SOP_SnowSim: INVALID INPUT\n");
+		unlockInputs();
+		return error();
+	}
+
+	if (frame <= 1) {
+		// RESET SOLVER 
+		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.001,
+				 0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
+
+		const GU_Detail* inGdp = inputGeo(0, context);
+		if (inGdp) {
+			GA_Offset ptoff;
+			GA_FOR_ALL_PTOFF(inGdp, ptoff) {
+				const UT_Vector3 pos = inGdp->getPos3(ptoff);
+				Eigen::Vector3f position(pos.x(), pos.y(), pos.z());
+				Eigen::Vector3f velocity(0.0f, 0.0f, 0.0f);
+				float mass = 1.0f;
+
+				solver.addParticle(MPMParticle(position, velocity, mass));
+			}
+		}
+
+
+		// SPHERE 
+		//float spacing = 0.14f;
+		//Eigen::Vector3f dim = Eigen::Vector3f(12.f, 12.f, 12.f);
+		//Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
+		//origin *= spacing * -0.5;
+
+		//float radius = 0.5f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
+		//Eigen::Vector3f center = origin + 0.5f * dim.cast<float>() * spacing;
+
+		//for (int i = 0; i < dim.x(); ++i) {
+		//	for (int j = 0; j < dim.y(); ++j) {
+		//		for (int k = 0; k < dim.z(); ++k) {
+		//			// world‐space position of this cell
+		//			Eigen::Vector3f pos;
+		//			pos.x() = origin.x() + i * spacing;
+		//			pos.y() = origin.y() + j * spacing;
+		//			pos.z() = origin.z() + k * spacing;
+
+		//			// 4) test distance to center
+		//			if ((pos - center).norm() <= radius) {
+		//				solver.addParticle(MPMParticle(pos, Eigen::Vector3f(0.0f, -8.0f, 0.0f), 1.0f));
+		//			}
+		//		}
+		//	}
+		//}
+
+
+		solver.computeInitialDensity();
+		prevFrame = 1;
+	}
+
 	
-
-	// PUT YOUR CODE HERE
-	// Decare the necessary variables and get always keep getting the current value in the node
-	// For example to always get the current angle thats set in the node ,you need to :
-	//    float angle;
-	//    angle = ANGLE(now)       
-    //    NOTE : ANGLE is a function that you need to use and it is declared in the header file to update your values instantly while cooking 
-	//LSystem myplant;
-	//if (frame == 1) {
-	//	
-	//	std::cout << "Frame 1: creating default solver" << std::endl;
-	//	
-	//	// IF WE ARE ON THE FIRST FRAME, RESET THE SIMULATION BACK TO DEFAULTS
-	//	solver = MPMSolver(Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.05f, Eigen::Vector3f(0.0f, 0.0f, 0.0f), 0.00001f,
-	//		0.025f, 0.0075f, 10.f, 400.f, 140000.f, 0.2f);
-
-	//	gdp->clearAndDestroy();  // clear any previous geometry
-
-	//	float spacing = 0.02f;
-	//	Eigen::Vector3i dim = Eigen::Vector3i(20, 20, 20);
-	//	Eigen::Vector3f origin = Eigen::Vector3f(float(dim[0]), float(dim[1]), float(dim[2]));
-	//	origin *= spacing * -0.5;
-	//	for (int i = 0; i < dim[0]; ++i)
-	//	{
-	//		for (int j = 0; j < dim[1]; ++j)
-	//		{
-	//			for (int k = 0; k < dim[2]; ++k)
-	//			{
-	//				float x = origin[0] + i * spacing;
-	//				float y = origin[1] + j * spacing;
-	//				float z = origin[2] + k * spacing;
-	//				solver.addParticle(particle(Eigen::Vector3f(x, y, z), Eigen::Vector3f(0.0f, -5.0f, 0.0f), 1.0f));
-	//			}
-	//		}
-	//	}
-	//	solver.computeInitialDensity();
-	//}
-	//else {
-	//	std::cout << "Frame i: updating solver" << std::endl;
-	//	solver.step();
-	//}
-
-	//for (int i = 0; i < 50; i++) {
+	for (int f = prevFrame + 1; f <= frame; ++f) {
 		solver.step();
-	//}
+	}
+	prevFrame = frame;
+
+	unlockInputs();
 
 	gdp->clearAndDestroy();
-
-	std::cout << "Making: " << solver.getParticles().size() << "Points" << std::endl;
 
 	// THIS WILL INSTATIATE THE POINTS IN SPACE
 	for each(MPMParticle p in solver.getParticles()) 
@@ -349,39 +360,6 @@ SOP_SnowSim::cookMySop(OP_Context &context)
 
 	int resetCache = RESET_CACHE(now);*/
 
-
-
-	//if (const GU_Detail* inputGeometry = inputGeo(0, context)) {
-	//	GA_Offset ptoff;
-	//	GA_FOR_ALL_PTOFF(inputGeometry, ptoff) {
-	//		const UT_Vector3& pos = inputGeometry->getPos3(ptoff);
-
-	//		Eigen::Vector3f position(pos.x(), pos.y(), pos.z());
-	//		Eigen::Vector3f velocity(0.0f, -5.0f, 0.0f);  
-
-	//		MPMSolver.addParticle(particle(position, velocity, 1.0f));
-	//	}
-	//}
-
-
-	// THIS IS JUST A TEST TO SEE IF I CAN GET POINTS ****
-
-	//gdp->clearAndDestroy();  // clear any previous geometry
-
-	//int dim = 10;
-	//float spacing = 0.1f;
-	//Eigen::Vector3f origin = Eigen::Vector3f(dim, dim, dim) * -0.5f * spacing;
-
-	//for (int i = 0; i < dim; ++i) {
-	//	for (int j = 0; j < dim; ++j) {
-	//		for (int k = 0; k < dim; ++k) {
-	//			Eigen::Vector3f pos = origin + spacing * Eigen::Vector3f(i, j, k);
-	//			
-	//			GA_Offset pt = gdp->appendPoint();
-	//			gdp->setPos3(pt, UT_Vector3(pos.x(), pos.y(), pos.z()));
-	//		}
-	//	}
-	//}
 
 	// THIS IS JUST A TEST TO SEE IF I CAN GET THE INPUT GEO
 #if 0

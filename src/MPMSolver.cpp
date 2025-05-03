@@ -576,6 +576,14 @@ void MPMSolver::computeForce() {
     }
 }
 
+float sphereSDF(const Eigen::Vector3f& pos, const Eigen::Vector3f& center, float radius) {
+    //Eigen::Vector3f posVec(pos.x, pos.y, pos.z);
+    return (pos - center).norm() - radius;
+    /*Eigen::Vector3f extent(0.5f, 0.5f, 0.5f);
+    Eigen::Vector3f q = (pos - center).cwiseAbs() - extent;
+    return std::max(q.maxCoeff(), 0.0f) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.0f);*/
+}
+
 
 // QUICK NOTE ABOUT THIS: The full implementation described in the paper uses a semi-implicit method for solving
 //                        which results in a more stable and complex system. Since this is a push to get something out
@@ -585,6 +593,13 @@ void MPMSolver::updateGridVel() {
     Eigen::Vector3f minCorner = grid.center - 0.5f * grid.dimension;
     Eigen::Vector3f maxCorner = grid.center + 0.5f * grid.dimension;
 
+    float spacing = 0.14f;
+    Eigen::Vector3f dim(12.f, 12.f, 12.f);
+    Eigen::Vector3f origin = dim * (-0.5f * spacing);
+    float sphereRadius = 0.25f * std::min({ dim.x(), dim.y(), dim.z() }) * spacing;
+    Eigen::Vector3f sphereCenter = origin + 0.5f * dim * spacing;
+    sphereCenter.y() -= 1.f;
+
     // EXPLICIT UPDATE JUST TO TEST
     for (GridNode& g : grid.gridNodes) {
         if (g.mass > 0.f) {
@@ -592,7 +607,25 @@ void MPMSolver::updateGridVel() {
             g.prevVelocity = g.velocity;
             g.velocity += stepSize * (1.f / g.mass) * g.force;
 
-            // VERY SIMPLE BOUNDING COLLISION
+            // // --- Sphere collision test ---
+            if (g.mass > 0.f) {
+                g.prevVelocity = g.velocity;
+                g.velocity += stepSize * (1.f / g.mass) * g.force;
+
+                // now collision test on the node’s *velocity* only
+                float sdfVal = sphereSDF(g.worldPos, sphereCenter, sphereRadius);
+                if (sdfVal < 0.f) {
+                    // compute outward normal
+                    Eigen::Vector3f normal = (g.worldPos - sphereCenter).normalized();
+
+                    // reflect only the *inward* component of velocity
+                    float vn = g.velocity.dot(normal);
+                    if (vn < 0.f) {
+                        float restitution = 1.f;
+                        g.velocity -= (1.f + restitution) * vn * normal;
+                    }
+                }
+            }
             // CLAMP VELOCITY AT BOUNDS
             for (int i = 0; i < 3; i++) {
                 if (i == 1 && g.worldPos[1] <= groundPlaneY) {

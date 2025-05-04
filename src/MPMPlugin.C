@@ -4,13 +4,18 @@
 
 #include <UT/UT_Math.h>
 #include <UT/UT_Interrupt.h>
+#include <UT/UT_VDBUtils.h>
 #include <GU/GU_Detail.h>
 #include <GU/GU_PrimPoly.h>
+#include <GU/GU_PrimVDB.h>
 #include <CH/CH_LocalVariable.h>
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_SpareData.h>
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
+
+#include <openvdb/openvdb.h>
+#include <openvdb/tools/GridTransformer.h>
 
 #include <iostream>
 #include <limits.h>
@@ -42,7 +47,7 @@ newSopOperator(OP_OperatorTable *table)
 				 SOP_SnowSim::myConstructor,	// How to build the SOP
 				 SOP_SnowSim::myTemplateList,	// My parameters
 			     1,				// Min # of sources
-			     1,				// Max # of sources
+			     2,				// Max # of sources
 				 SOP_SnowSim::myVariables,	// Local variables
 				 OP_FLAG_GENERATOR)
 	    );
@@ -197,6 +202,8 @@ SOP_SnowSim::SOP_SnowSim(OP_Network *net, const char *name, OP_Operator *op)
 	// INITILIZE MPM SOLVER
 	solver = MPMSolver();
 	solver.computeInitialDensity();
+
+	sdfCollider = nullptr;
 }
 
 SOP_SnowSim::~SOP_SnowSim() {}
@@ -212,6 +219,82 @@ bool SOP_SnowSim::isTimeDependent() const
 	return true;
 }
 
+
+void SOP_SnowSim::readSDFFromVDB(const GU_Detail* sdfGdp)
+{
+	//if (!sdfGdp) {
+	//	UTprintf("No SDF input provided\n");
+	//	return;
+	//}
+
+	//// Initialize OpenVDB if it hasn't been already
+	//openvdb::initialize();
+
+	//// Iterate through all primitives looking for VDBs
+	//for (GA_Iterator it(sdfGdp->getPrimitiveRange()); !it.atEnd(); ++it)
+	//{
+	//	const GA_Primitive* prim = sdfGdp->getPrimitive(*it);
+
+	//	// Check if this is a VDB primitive
+	//	if (prim->getTypeId() == GA_PRIMVDB)
+	//	{
+	//		const GU_PrimVDB* vdbPrim = static_cast<const GU_PrimVDB*>(prim);
+
+	//		// Get the grid from the VDB primitive
+	//		const openvdb::GridBase::ConstPtr gridBase = vdbPrim->getConstGridPtr();
+
+	//		// Check if this is a float grid (typical for SDFs)
+	//		if (gridBase->isType<openvdb::FloatGrid>())
+	//		{
+	//			// Cast to a float grid
+	//			openvdb::FloatGrid::ConstPtr grid = openvdb::gridConstPtrCast<openvdb::FloatGrid>(gridBase);
+	//			sdfCollider = grid;
+
+	//			UTprintf("Found VDB SDF with name: %s\n", grid->getName().c_str());
+
+	//			// Now you have the grid and can access its metadata and values
+	//			openvdb::CoordBBox bbox = grid->evalActiveVoxelBoundingBox();
+	//			openvdb::Vec3d voxelSize = grid->voxelSize();
+
+	//			//UTprintf("  Bounding box min: (%d, %d, %d)\n", bbox.min().x(), bbox.min().y(), bbox.min().z());
+	//			//UTprintf("  Bounding box max: (%d, %d, %d)\n", bbox.max().x(), bbox.max().y(), bbox.max().z());
+	//			//UTprintf("  Voxel size: (%f, %f, %f)\n", voxelSize.x(), voxelSize.y(), voxelSize.z());
+
+	//		}
+	//	}
+	//}
+
+	if (!sdfGdp) {
+		UTprintf("No SDF input provided\n");
+		return;
+	}
+
+	vdbPrimSDF = nullptr; // Reset the reference
+
+	// Iterate through all primitives looking for VDBs
+	for (GA_Iterator it(sdfGdp->getPrimitiveRange()); !it.atEnd(); ++it)
+	{
+		const GA_Primitive* prim = sdfGdp->getPrimitive(*it);
+		// Check if this is a VDB primitive
+		if (prim->getTypeId() == GA_PRIMVDB)
+		{
+			const GU_PrimVDB* vdbPrim = static_cast<const GU_PrimVDB*>(prim);
+			// Check if this is a float grid (typical for SDFs)
+			const openvdb::GridBase::ConstPtr gridBase = vdbPrim->getConstGridPtr();
+			if (gridBase->isType<openvdb::FloatGrid>())
+			{
+				// Store the VDB primitive for later use
+				vdbPrimSDF = vdbPrim;
+				break; // Foun d what we need
+			}
+		}
+	}
+
+	if (!vdbPrimSDF) {
+		UTprintf("No valid float VDB found for SDF\n");
+	}
+}
+
 #if 1
 OP_ERROR
 SOP_SnowSim::cookMySop(OP_Context& context)
@@ -221,13 +304,22 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 	int frame = context.getFrame();
 
 
-	// TEST INPUT SOURCE
 	lockInputs(context);
+
+	// FIRST INPUT GEOMETRY
 	const GU_Detail* inGdp = inputGeo(0, context);
 	if (!inGdp) {
 		UTprintf("SOP_SnowSim: INVALID INPUT\n");
 		unlockInputs();
 		return error();
+	}
+
+	// SECOND INPUT (SDF)
+
+	const GU_Detail* sdfGdp = inputGeo(1, context);
+	// Read the SDF VDB if available
+	if (sdfGdp) {
+		readSDFFromVDB(sdfGdp);
 	}
 
 	//float separation = PARTICLE_SEP(now);
@@ -249,10 +341,10 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		/*MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
 			float critCompression, float critStretch,
 			float hardeningCoeff, float initialDensity, float youngsMod,
-			float poissonRatio);*/
+			float poissonRatio, openvdb::FloatGrid::ConstPtr collider);*/
 
 		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
-					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
+					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35, sdfCollider, vdbPrimSDF);
 
 		/*solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
 			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);*/
@@ -327,9 +419,6 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		drawEdge(4, 5); drawEdge(5, 7); drawEdge(7, 6); drawEdge(6, 4); // top
 		drawEdge(0, 4); drawEdge(1, 5); drawEdge(2, 6); drawEdge(3, 7); // sides
 	}
-
-
-
 
 
 	myCurrPoint = -1;

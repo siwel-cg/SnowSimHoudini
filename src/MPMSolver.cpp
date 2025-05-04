@@ -20,15 +20,17 @@ MPMSolver::MPMSolver() :
     groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
+	colSDF = nullptr;
+	const GU_PrimVDB* vdbPrimSDF = nullptr;
 } 
 
 
 MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
-    float initialDensity, float youngsMod, float poissonRatio)
+    float initialDensity, float youngsMod, float poissonRatio, openvdb::FloatGrid::ConstPtr collider, const GU_PrimVDB* vdbPrimSDF)
     : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)), groundPlaneY(groundPlane),
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
-    initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio)
+	initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), colSDF(collider), vdbPrimSDF(vdbPrimSDF)
 {
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
@@ -584,6 +586,54 @@ float sphereSDF(const Eigen::Vector3f& pos, const Eigen::Vector3f& center, float
     return std::max(q.maxCoeff(), 0.0f) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.0f);*/
 }
 
+//float MPMSolver::querySdf(Eigen::Vector3f worldPos) {
+//    if (!colSDF) {
+//        return std::numeric_limits<float>::max(); // Return large positive value if no SDF
+//    }
+//
+//    // Convert world-space point to grid space
+//    openvdb::Vec3d worldPoint(worldPos.x(), worldPos.y(), worldPos.z());
+//    openvdb::Vec3d indexPoint = colSDF->worldToIndex(worldPoint);
+//
+//    // Create an accessor for efficient lookup
+//    openvdb::FloatGrid::ConstAccessor accessor = colSDF->getConstAccessor();
+//
+//    // Use trilinear interpolation to get SDF value at the point
+//    // This gives smoother results than nearest-neighbor sampling
+//    //return openvdb::tools::GridSampler<openvdb::FloatGrid, openvdb::tools::BoxSampler>::sample(accessor, indexPoint);
+//
+//}
+//
+//Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f worldPos) {
+//
+//}
+
+float MPMSolver::querySdf(Eigen::Vector3f point)
+{
+    // Store the VDB primitive reference when you find it in readSDFFromVDB
+    if (!vdbPrimSDF) {
+        return std::numeric_limits<float>::max(); // Return large positive value if no SDF
+    }
+
+	const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
+
+    // Use the GEO_PrimVDB's getValueF method to get the signed distance at the point
+    return vdbPrimSDF->getValueF(pointVDB);
+}
+
+Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f point)
+{
+    if (!vdbPrimSDF) {
+        return Eigen::Vector3f(0, 1, 0); // Default up vector if no SDF
+    }
+
+    const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
+
+    // Get gradient directly from the VDB primitive
+    UT_Vector3 normal = vdbPrimSDF->getGradient(pointVDB);
+	return Eigen::Vector3f(normal.x(), normal.y(), normal.z()).normalized();
+}
+
 
 // QUICK NOTE ABOUT THIS: The full implementation described in the paper uses a semi-implicit method for solving
 //                        which results in a more stable and complex system. Since this is a push to get something out
@@ -613,10 +663,11 @@ void MPMSolver::updateGridVel() {
                 g.velocity += stepSize * (1.f / g.mass) * g.force;
 
                 // now collision test on the node’s *velocity* only
-                float sdfVal = sphereSDF(g.worldPos, sphereCenter, sphereRadius);
+                //float sdfVal = sphereSDF(g.worldPos, sphereCenter, sphereRadius);
+				float sdfVal = querySdf(g.worldPos);
                 if (sdfVal < 0.f) {
                     // compute outward normal
-                    Eigen::Vector3f normal = (g.worldPos - sphereCenter).normalized();
+                    Eigen::Vector3f normal = sdfNormal(g.worldPos);// (g.worldPos - sphereCenter).normalized();
 
                     // reflect only the *inward* component of velocity
                     float vn = g.velocity.dot(normal);

@@ -42,18 +42,20 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\Side Effects Software\Houdini 20.5.522\toolkit\include;C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries;C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Side Effects Software\Houdini 20.5.522\toolkit\include;C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\libraries;C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\.;C:\Program Files\Side Effects Software\Houdini 20.5.522\houdini\include\openvdb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MinimalRebuild></MinimalRebuild>
+      <MinimalRebuild>
+      </MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <SupportJustMyCode></SupportJustMyCode>
+      <SupportJustMyCode>
+      </SupportJustMyCode>
       <UseFullPaths>false</UseFullPaths>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;VERSION="";_USE_MATH_DEFINES;SESI_LITTLE_ENDIAN;SIZEOF_VOID_P=8;MAKING_DSO;HBOOST_ALL_NO_LIB;CMAKE_INTDIR="Release";hlsystem_EXPORTS</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>

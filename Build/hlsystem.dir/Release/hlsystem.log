@@ -1,4 +1,5 @@
-﻿  MPMSolver.cpp
+﻿  MPMPlugin.C
+  Deprecated in Houdini 13.0. Use SYS_Math.h instead.
      Creating library C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.lib and object C:/Users/lewis/OneDrive/Desktop/LG_SnowSim/SnowSimHoudini/Build/Release/hlsystem.exp
   hlsystem.vcxproj -> C:\Users\lewis\OneDrive\Desktop\LG_SnowSim\SnowSimHoudini\Build\bin\Release\hlsystem.dll
   Copying hlsystem.dll to CUSTOM_DSO_PATH directory

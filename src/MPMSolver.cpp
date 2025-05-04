@@ -20,17 +20,16 @@ MPMSolver::MPMSolver() :
     groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
-	colSDF = nullptr;
 	const GU_PrimVDB* vdbPrimSDF = nullptr;
 } 
 
 
 MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
-    float initialDensity, float youngsMod, float poissonRatio, openvdb::FloatGrid::ConstPtr collider, const GU_PrimVDB* vdbPrimSDF)
+    float initialDensity, float youngsMod, float poissonRatio, const GU_PrimVDB* vdbPrimSDF)
     : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)), groundPlaneY(groundPlane),
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
-	initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), colSDF(collider), vdbPrimSDF(vdbPrimSDF)
+	initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), vdbPrimSDF(vdbPrimSDF)
 {
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
@@ -254,13 +253,8 @@ void MPMSolver::updateParticleDefGrad() {
         // UPDATE DEFORMATION GRADIENT
         p.FE = (Eigen::Matrix3f::Identity() + stepSize * velGrad) * p.FE;
 
-
-        // Predict the new total deformation gradient (FE * FP)
-        //glm::mat3 F_total = (glm::mat3(1.0f) + stepSize * velGrad) * p.FE * p.FP;
-
         // Predict the new elastic deformation gradient
         Eigen::Matrix3f FE_hat = p.FE;
-
 
         Eigen::Matrix3f FE_hat_eigen = FE_hat;
 
@@ -284,17 +278,7 @@ void MPMSolver::updateParticleDefGrad() {
     
         Eigen::Matrix3f FE_new = U * Sigma_clamped * V.transpose();
         Eigen::Matrix3f Fp_old = p.FP;
-        /*for (int c = 0; c < 3; ++c) {
-            for (int r = 0; r < 3; ++r) {
-                Fp_old(r, c) = p.FP[r][c];
-            }
-        }*/
-
-        // Eigen::Matrix3f F_total_eigen;
-        // for (int col = 0; col < 3; ++col)
-        //     for (int row = 0; row < 3; ++row)
-        //         F_total_eigen(row, col) = F_total[col][row];
-
+        
         // Update FP using: FP = V * Σ⁻¹ * Uᵀ * F_total
         Eigen::Matrix3f Sigma_inv = Eigen::Matrix3f::Zero();
         for (int i = 0; i < 3; ++i)
@@ -310,31 +294,6 @@ void MPMSolver::updateParticleDefGrad() {
         // UPDATE POINT POSITIONS
         p.position += stepSize * p.velocity;
     }
-
-
-    // glm::vec3 minCorner = grid.center - 0.5f * grid.dimension;
-    // glm::vec3 maxCorner = grid.center + 0.5f * grid.dimension;
-
-
-    // //THIS IS DOING NOTHING : :
-    // float damping = 0.0f; // or try 0.01f, 0.1f for bounciness
-    // for (MPMParticle &p : particles) {
-    //     for (int axis = 0; axis < 3; ++axis) {
-    //         if (p.position[axis] < minCorner[axis]) {
-    //             p.position[axis] = minCorner[axis];
-    //             if (p.velocity[axis] < 0.f) {
-    //                 p.velocity[axis] *= -damping;
-    //             }
-    //         }
-
-    //         if (p.position[axis] > maxCorner[axis]) {
-    //             p.position[axis] = maxCorner[axis];
-    //             if (p.velocity[axis] > 0.f) {
-    //                 p.velocity[axis] *= -damping;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 // [======] GRID FUNCTIONS [======]
@@ -396,14 +355,6 @@ void MPMSolver::particleToGridTransfer() {
 
     }
 
-    // // Normalize grid node velocities using only effective mass
-    // for (GridNode& node : grid.gridNodes) {
-    //     if (node.velocityMass > 0.f) {
-    //         node.velocity /= node.velocityMass;
-    //     } else {
-    //         node.velocity = glm::vec3(0.f);
-    //     }
-    // }
 
     // Currently the velocity stored is actually the total weighted momentum
     // To convert it to actual vel we divide each gridCell by its mass
@@ -586,50 +537,25 @@ float sphereSDF(const Eigen::Vector3f& pos, const Eigen::Vector3f& center, float
     return std::max(q.maxCoeff(), 0.0f) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.0f);*/
 }
 
-//float MPMSolver::querySdf(Eigen::Vector3f worldPos) {
-//    if (!colSDF) {
-//        return std::numeric_limits<float>::max(); // Return large positive value if no SDF
-//    }
-//
-//    // Convert world-space point to grid space
-//    openvdb::Vec3d worldPoint(worldPos.x(), worldPos.y(), worldPos.z());
-//    openvdb::Vec3d indexPoint = colSDF->worldToIndex(worldPoint);
-//
-//    // Create an accessor for efficient lookup
-//    openvdb::FloatGrid::ConstAccessor accessor = colSDF->getConstAccessor();
-//
-//    // Use trilinear interpolation to get SDF value at the point
-//    // This gives smoother results than nearest-neighbor sampling
-//    //return openvdb::tools::GridSampler<openvdb::FloatGrid, openvdb::tools::BoxSampler>::sample(accessor, indexPoint);
-//
-//}
-//
-//Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f worldPos) {
-//
-//}
 
 float MPMSolver::querySdf(Eigen::Vector3f point)
 {
-    // Store the VDB primitive reference when you find it in readSDFFromVDB
     if (!vdbPrimSDF) {
-        return std::numeric_limits<float>::max(); // Return large positive value if no SDF
+        return std::numeric_limits<float>::max();
     }
 
 	const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
-
-    // Use the GEO_PrimVDB's getValueF method to get the signed distance at the point
     return vdbPrimSDF->getValueF(pointVDB);
 }
 
 Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f point)
 {
     if (!vdbPrimSDF) {
-        return Eigen::Vector3f(0, 1, 0); // Default up vector if no SDF
+        return Eigen::Vector3f(0, 1, 0);
     }
 
     const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
 
-    // Get gradient directly from the VDB primitive
     UT_Vector3 normal = vdbPrimSDF->getGradient(pointVDB);
 	return Eigen::Vector3f(normal.x(), normal.y(), normal.z()).normalized();
 }
@@ -667,7 +593,7 @@ void MPMSolver::updateGridVel() {
 				float sdfVal = querySdf(g.worldPos);
                 if (sdfVal < 0.f) {
                     // compute outward normal
-                    Eigen::Vector3f normal = sdfNormal(g.worldPos);// (g.worldPos - sphereCenter).normalized();
+                    Eigen::Vector3f normal = sdfNormal(g.worldPos);
 
                     // reflect only the *inward* component of velocity
                     float vn = g.velocity.dot(normal);

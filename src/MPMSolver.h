@@ -22,7 +22,7 @@ public:
     MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
-        float poissonRatio, openvdb::FloatGrid::ConstPtr collider, const GU_PrimVDB* vdbPrimSDF);
+        float poissonRatio, const GU_PrimVDB* vdbPrimSDF);
     void addParticle(const MPMParticle& particle);
     void computeForcesAndIntegrate();
 
@@ -41,7 +41,6 @@ public:
     float mu0;
     float lambda0;
 
-    openvdb::FloatGrid::ConstPtr colSDF;
     const GU_PrimVDB* vdbPrimSDF;
 
     void computeInitialDensity();

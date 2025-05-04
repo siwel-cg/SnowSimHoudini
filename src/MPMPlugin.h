@@ -29,7 +29,6 @@ namespace HDK_Sample {
 
         MPMSolver solver;
 
-        openvdb::FloatGrid::ConstPtr sdfCollider;
         const GU_PrimVDB* vdbPrimSDF;
 
 

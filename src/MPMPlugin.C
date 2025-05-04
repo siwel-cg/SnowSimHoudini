@@ -244,6 +244,43 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 	Eigen::Vector3f boundsPos = Eigen::Vector3f(BOUNDS_POS(now)[0], BOUNDS_POS(now)[1], BOUNDS_POS(now)[2]);
 
 	if (frame <= 1) {
+
+		// CREATE GROUND PLANE
+		
+		fpreal t = context.getTime();
+		float groundY = GROUND_PLANE(t);
+
+		float size = 5.0f;
+
+		UT_Vector3 p0(-size, groundY, -size);
+		UT_Vector3 p1( size, groundY, -size);
+		UT_Vector3 p2( size, groundY,  size);
+		UT_Vector3 p3(-size, groundY,  size);
+
+		GA_Offset pt0 = gdp->appendPointOffset();
+		GA_Offset pt1 = gdp->appendPointOffset();
+		GA_Offset pt2 = gdp->appendPointOffset();
+		GA_Offset pt3 = gdp->appendPointOffset();
+
+		gdp->setPos3(pt0, p0);
+		gdp->setPos3(pt1, p1);
+		gdp->setPos3(pt2, p2);
+		gdp->setPos3(pt3, p3);
+
+		GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
+		quad->addVertex(pt0);
+		quad->addVertex(pt1);
+		quad->addVertex(pt2);
+		quad->addVertex(pt3);
+		quad->close();
+
+		// Optional: color the plane gray
+		GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
+		cd.set(pt0, UT_Vector3(0.4f));
+		cd.set(pt1, UT_Vector3(0.4f));
+		cd.set(pt2, UT_Vector3(0.4f));
+		cd.set(pt3, UT_Vector3(0.4f));
+
 		// RESET SOLVER 
 
 		/*MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,

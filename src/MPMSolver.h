@@ -1,5 +1,11 @@
 #pragma once
 
+#include <UT/UT_VDBUtils.h>
+#include <GU/GU_PrimVDB.h>
+#include <openvdb/openvdb.h>
+#include <openvdb/tools/GridTransformer.h>
+#include <openvdb/tools/Interpolation.h>
+
 #include <vector>
 #include <Eigen/Dense>
 #include "particle.h"
@@ -16,7 +22,7 @@ public:
     MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
-        float poissonRatio);
+        float poissonRatio, const GU_PrimVDB* vdbPrimSDF);
     void addParticle(const MPMParticle& particle);
     void computeForcesAndIntegrate();
 
@@ -31,6 +37,8 @@ public:
     float poissonRatio;
 
     float groundPlaneY;
+
+    const GU_PrimVDB* vdbPrimSDF;
 
     float mu0;
     float lambda0;
@@ -57,6 +65,9 @@ private:
     void particleToGridTransfer();
     void computeForce();
     void updateGridVel();
+
+    float querySdf(Eigen::Vector3f worldPos);
+    Eigen::Vector3f sdfNormal(Eigen::Vector3f worldPos);
 
 };
 

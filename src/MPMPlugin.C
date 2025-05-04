@@ -4,13 +4,18 @@
 
 #include <UT/UT_Math.h>
 #include <UT/UT_Interrupt.h>
+#include <UT/UT_VDBUtils.h>
 #include <GU/GU_Detail.h>
 #include <GU/GU_PrimPoly.h>
+#include <GU/GU_PrimVDB.h>
 #include <CH/CH_LocalVariable.h>
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_SpareData.h>
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
+
+#include <openvdb/openvdb.h>
+#include <openvdb/tools/GridTransformer.h>
 
 #include <iostream>
 #include <limits.h>
@@ -42,7 +47,7 @@ newSopOperator(OP_OperatorTable *table)
 				 SOP_SnowSim::myConstructor,	// How to build the SOP
 				 SOP_SnowSim::myTemplateList,	// My parameters
 			     1,				// Min # of sources
-			     1,				// Max # of sources
+			     2,				// Max # of sources
 				 SOP_SnowSim::myVariables,	// Local variables
 				 OP_FLAG_GENERATOR)
 	    );
@@ -212,6 +217,35 @@ bool SOP_SnowSim::isTimeDependent() const
 	return true;
 }
 
+
+void SOP_SnowSim::readSDFFromVDB(const GU_Detail* sdfGdp)
+{
+	if (!sdfGdp) {
+		UTprintf("No SDF input provided\n");
+		return;
+	}
+
+	vdbPrimSDF = nullptr;
+	for (GA_Iterator it(sdfGdp->getPrimitiveRange()); !it.atEnd(); ++it)
+	{
+		const GA_Primitive* prim = sdfGdp->getPrimitive(*it);
+		if (prim->getTypeId() == GA_PRIMVDB)
+		{
+			const GU_PrimVDB* vdbPrim = static_cast<const GU_PrimVDB*>(prim);
+			const openvdb::GridBase::ConstPtr gridBase = vdbPrim->getConstGridPtr();
+			if (gridBase->isType<openvdb::FloatGrid>())
+			{
+				vdbPrimSDF = vdbPrim;
+				break;
+			}
+		}
+	}
+
+	if (!vdbPrimSDF) {
+		UTprintf("No valid float VDB found for SDF\n");
+	}
+}
+
 #if 1
 OP_ERROR
 SOP_SnowSim::cookMySop(OP_Context& context)
@@ -228,6 +262,12 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		UTprintf("SOP_SnowSim: INVALID INPUT\n");
 		unlockInputs();
 		return error();
+	}
+
+	const GU_Detail* sdfGdp = inputGeo(1, context);
+	// Read the SDF VDB if available
+	if (sdfGdp) {
+		readSDFFromVDB(sdfGdp);
 	}
 
 	//float separation = PARTICLE_SEP(now);
@@ -256,7 +296,7 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
 
 		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
-			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);
+			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, vdbPrimSDF);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {

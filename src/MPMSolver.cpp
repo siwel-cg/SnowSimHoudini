@@ -522,6 +522,8 @@ void MPMSolver::computeForce() {
         g.force = Eigen::Vector3f(0.f, 0.f, 0.f);
     }
 
+    UT_Vector3 gravity = GRAVITY(context.getTime());
+
     float xMin = grid.center[0] - 0.5f * grid.dimension[0];
     float yMin = grid.center[1] - 0.5f * grid.dimension[1];
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
@@ -570,7 +572,7 @@ void MPMSolver::computeForce() {
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
                     //
                     curNode.force -= (p.volume * p.sigma * gradWeight);
-                    curNode.force += weight * Eigen::Vector3f(0.f, -gravity, 0.f) * p.mass;
+                    curNode.force += weight * Eigen::Vector3f(gravity.x(), gravity.y(), gravity.z()) * p.mass;
                 }
             }
         }

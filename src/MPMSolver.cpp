@@ -20,15 +20,16 @@ MPMSolver::MPMSolver() :
     groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
+    const GU_PrimVDB* vdbPrimSDF = nullptr;
 } 
 
 
 MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
-    float initialDensity, float youngsMod, float poissonRatio)
+    float initialDensity, float youngsMod, float poissonRatio, const GU_PrimVDB* vdbPrimSDF)
     : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)), groundPlaneY(groundPlane),
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
-    initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio)
+    initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), vdbPrimSDF(vdbPrimSDF)
 {
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
@@ -585,6 +586,28 @@ float sphereSDF(const Eigen::Vector3f& pos, const Eigen::Vector3f& center, float
 }
 
 
+float MPMSolver::querySdf(Eigen::Vector3f point)
+{
+    if (!vdbPrimSDF) {
+        return std::numeric_limits<float>::max();
+    }
+
+    const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
+    return vdbPrimSDF->getValueF(pointVDB);
+}
+
+Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f point)
+{
+    if (!vdbPrimSDF) {
+        return Eigen::Vector3f(0, 1, 0);
+    }
+
+    const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
+
+    UT_Vector3 normal = vdbPrimSDF->getGradient(pointVDB);
+    return Eigen::Vector3f(normal.x(), normal.y(), normal.z()).normalized();
+}
+
 // QUICK NOTE ABOUT THIS: The full implementation described in the paper uses a semi-implicit method for solving
 //                        which results in a more stable and complex system. Since this is a push to get something out
 //                        I am just doing an explicit solve with the most basic collision handling possible.
@@ -607,18 +630,15 @@ void MPMSolver::updateGridVel() {
             g.prevVelocity = g.velocity;
             g.velocity += stepSize * (1.f / g.mass) * g.force;
 
-            // // --- Sphere collision test ---
+            // // --- SDF COLLISIONS ---
             if (g.mass > 0.f) {
                 g.prevVelocity = g.velocity;
                 g.velocity += stepSize * (1.f / g.mass) * g.force;
 
-                // now collision test on the node’s *velocity* only
-                float sdfVal = sphereSDF(g.worldPos, sphereCenter, sphereRadius);
+                float sdfVal = querySdf(g.worldPos);
                 if (sdfVal < 0.f) {
-                    // compute outward normal
-                    Eigen::Vector3f normal = (g.worldPos - sphereCenter).normalized();
+                    Eigen::Vector3f normal = sdfNormal(g.worldPos);
 
-                    // reflect only the *inward* component of velocity
                     float vn = g.velocity.dot(normal);
                     if (vn < 0.f) {
                         float restitution = 1.f;

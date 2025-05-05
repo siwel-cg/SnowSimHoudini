@@ -17,6 +17,8 @@ namespace HDK_Sample {
         static OP_Node* myConstructor(OP_Network*, const char*,
             OP_Operator*);
 
+        void readSDFFromVDB(const GU_Detail* sdfGdp);
+
         /// Stores the description of the interface of the SOP in Houdini.
         /// Each parm template refers to a parameter.
         static PRM_Template		 myTemplateList[];
@@ -25,6 +27,8 @@ namespace HDK_Sample {
         static CH_LocalVariable	 myVariables[];
 
         MPMSolver solver;
+
+        const GU_PrimVDB* vdbPrimSDF;
 
         
 

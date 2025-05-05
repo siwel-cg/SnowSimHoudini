@@ -4,13 +4,18 @@
 
 #include <UT/UT_Math.h>
 #include <UT/UT_Interrupt.h>
+#include <UT/UT_VDBUtils.h>
 #include <GU/GU_Detail.h>
 #include <GU/GU_PrimPoly.h>
+#include <GU/GU_PrimVDB.h>
 #include <CH/CH_LocalVariable.h>
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_SpareData.h>
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
+
+#include <openvdb/openvdb.h>
+#include <openvdb/tools/GridTransformer.h>
 
 #include <iostream>
 #include <limits.h>
@@ -42,7 +47,7 @@ newSopOperator(OP_OperatorTable *table)
 				 SOP_SnowSim::myConstructor,	// How to build the SOP
 				 SOP_SnowSim::myTemplateList,	// My parameters
 			     1,				// Min # of sources
-			     1,				// Max # of sources
+			     2,				// Max # of sources
 				 SOP_SnowSim::myVariables,	// Local variables
 				 OP_FLAG_GENERATOR)
 	    );
@@ -218,6 +223,35 @@ bool SOP_SnowSim::isTimeDependent() const
 	return true;
 }
 
+
+void SOP_SnowSim::readSDFFromVDB(const GU_Detail* sdfGdp)
+{
+	if (!sdfGdp) {
+		UTprintf("No SDF input provided\n");
+		return;
+	}
+
+	vdbPrimSDF = nullptr;
+	for (GA_Iterator it(sdfGdp->getPrimitiveRange()); !it.atEnd(); ++it)
+	{
+		const GA_Primitive* prim = sdfGdp->getPrimitive(*it);
+		if (prim->getTypeId() == GA_PRIMVDB)
+		{
+			const GU_PrimVDB* vdbPrim = static_cast<const GU_PrimVDB*>(prim);
+			const openvdb::GridBase::ConstPtr gridBase = vdbPrim->getConstGridPtr();
+			if (gridBase->isType<openvdb::FloatGrid>())
+			{
+				vdbPrimSDF = vdbPrim;
+				break;
+			}
+		}
+	}
+
+	if (!vdbPrimSDF) {
+		UTprintf("No valid float VDB found for SDF\n");
+	}
+}
+
 #if 1
 OP_ERROR
 SOP_SnowSim::cookMySop(OP_Context& context)
@@ -236,6 +270,12 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		return error();
 	}
 
+	const GU_Detail* sdfGdp = inputGeo(1, context);
+	// Read the SDF VDB if available
+	if (sdfGdp) {
+		readSDFFromVDB(sdfGdp);
+	}
+
 	//float separation = PARTICLE_SEP(now);
 	float critCompression = CRIT_COMPRESSION(now);
 	float critStretch = CRIT_STRETCH(now);
@@ -251,42 +291,6 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 	if (frame <= 1) {
 
-		// CREATE GROUND PLANE
-		
-		fpreal t = context.getTime();
-		float groundY = GROUND_PLANE(t);
-
-		float size = 5.0f;
-
-		UT_Vector3 p0(-size, groundY, -size);
-		UT_Vector3 p1( size, groundY, -size);
-		UT_Vector3 p2( size, groundY,  size);
-		UT_Vector3 p3(-size, groundY,  size);
-
-		GA_Offset pt0 = gdp->appendPointOffset();
-		GA_Offset pt1 = gdp->appendPointOffset();
-		GA_Offset pt2 = gdp->appendPointOffset();
-		GA_Offset pt3 = gdp->appendPointOffset();
-
-		gdp->setPos3(pt0, p0);
-		gdp->setPos3(pt1, p1);
-		gdp->setPos3(pt2, p2);
-		gdp->setPos3(pt3, p3);
-
-		GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
-		quad->addVertex(pt0);
-		quad->addVertex(pt1);
-		quad->addVertex(pt2);
-		quad->addVertex(pt3);
-		quad->close();
-
-		// Optional: color the plane gray
-		GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
-		cd.set(pt0, UT_Vector3(0.4f));
-		cd.set(pt1, UT_Vector3(0.4f));
-		cd.set(pt2, UT_Vector3(0.4f));
-		cd.set(pt3, UT_Vector3(0.4f));
-
 		// RESET SOLVER 
 
 		/*MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float dt,
@@ -294,11 +298,11 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 			float hardeningCoeff, float initialDensity, float youngsMod,
 			float poissonRatio);*/
 
-		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
-					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);
+		/*solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
+					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
 
-		/*solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
-			critCompression, critStretch, hardening, initDensity, youngModulus, poisson);*/
+		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
+			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, vdbPrimSDF);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {
@@ -338,11 +342,46 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 
 	// GROUND PLANE
-	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
-	UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
+
+	if (frame == 1) {
+		float size = 5.0f;
+
+		UT_Vector3 p0(-size, groundPlane, -size);
+		UT_Vector3 p1(size, groundPlane, -size);
+		UT_Vector3 p2(size, groundPlane, size);
+		UT_Vector3 p3(-size, groundPlane, size);
+
+		GA_Offset pt0 = gdp->appendPointOffset();
+		GA_Offset pt1 = gdp->appendPointOffset();
+		GA_Offset pt2 = gdp->appendPointOffset();
+		GA_Offset pt3 = gdp->appendPointOffset();
+
+		gdp->setPos3(pt0, p0);
+		gdp->setPos3(pt1, p1);
+		gdp->setPos3(pt2, p2);
+		gdp->setPos3(pt3, p3);
+
+		GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
+		quad->appendVertex(pt0);
+		quad->appendVertex(pt1);
+		quad->appendVertex(pt2);
+		quad->appendVertex(pt3);
+		quad->close();
+
+		// Optional: color the plane gray
+		//GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
+		//cd.set(pt0, UT_Vector3(0.4f));
+		//cd.set(pt1, UT_Vector3(0.4f));
+		//cd.set(pt2, UT_Vector3(0.4f));
+		//cd.set(pt3, UT_Vector3(0.4f));
+	}
+	
 
 
 	// BOUNDING BOX ( ONLY SHOW AT INITIALIZATION )
+	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
+	UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
+
 	if (frame == 1) {
 		GA_Offset bb[8];
 		for (int k = 0; k < 2; ++k) {

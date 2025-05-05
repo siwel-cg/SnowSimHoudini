@@ -39,50 +39,6 @@ void MPMSolver::addParticle(const MPMParticle& particle) {
     particles.push_back(particle);
 }
 
-
-// THIS IS ORIGINAL PARTICLE STUFF ?? IDK IT WAS HERE WHEN I GOT HERE
-void MPMSolver::computeForcesAndIntegrate() {
-    for (MPMParticle& p : particles) {
-        Eigen::Vector3f force = computeGravity(p) + computeCohesion(p);
-        integrate(p, force);
-    }
-}
-
-Eigen::Vector3f MPMSolver::computeGravity(const MPMParticle& p) {
-    return Eigen::Vector3f(0.0, p.mass * gravity, 0.0);
-}
-
-Eigen::Vector3f MPMSolver::computeCohesion(const MPMParticle& p) {
-    Eigen::Vector3f cohesionForce(0.0, 0.0, 0.0);
-    for (const MPMParticle& neighbor : particles) {
-        if (&p == &neighbor) continue;
-        Eigen::Vector3f diff = neighbor.position - p.position;
-        float distance = diff.norm();
-        if (distance > 0 && distance < grid.spacing) {
-            cohesionForce += (diff * (1.f / diff.norm())) * cohesionStrength / distance;
-        }
-    }
-    return cohesionForce;
-}
-
-void MPMSolver::integrate(MPMParticle& p, Eigen::Vector3f force) {
-    Eigen::Vector3f acceleration = force / p.mass;
-    p.velocity += acceleration * dt;
-    p.position += p.velocity * dt;
-}
-
-const std::vector<MPMParticle>& MPMSolver::getParticles() const {
-    return particles;
-}
-
-void MPMSolver::step() {
-    grid.clearGrid();
-    particleToGridTransfer();
-    computeForce();
-    updateGridVel();
-    updateParticleDefGrad();
-}
-
 // THIS IS HELPER FUNCTION FOR COMPUTING WEIGHTING
 // TODO : ENSURE ALL WEIGHTS IN KERNEL ADD UP TO 1
 static float weightFun(float x) {

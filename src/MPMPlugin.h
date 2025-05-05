@@ -110,6 +110,10 @@ namespace HDK_Sample {
             return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
         }
 
+        UT_Vector3 GRAVITY(fpreal t) {
+            return UT_Vector3(evalFloat("gravity", 0, t), evalFloat("gravity", 1, t), evalFloat("gravity", 2, t));
+        }
+
     };
 } // End HDK_Sample namespace
 

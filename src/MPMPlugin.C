@@ -58,7 +58,7 @@ static PRM_Name youngName("young_modulus", "YoungsMod");
 static PRM_Name poissonName("poisson", "Poisson");
 
 // Simulation Tab
-//static PRM_Name gravityName("gravity", "Gravity Force");
+static PRM_Name gravityName("gravity", "Gravity Force");
 static PRM_Name timeStepName("dt", "Time Step");
 static PRM_Name groundName("ground_plane", "Ground Plane");
 static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
@@ -90,6 +90,11 @@ static PRM_Default boundSizeDefault[] = {
 static PRM_Default boundPosDefault[] = {
 	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
 };
+static PRM_Default gravityDefaults[] = {
+    PRM_Default(0.0f), // X
+    PRM_Default(-9.8f), // Y
+    PRM_Default(0.0f)  // Z
+};
 
 
 // RANGES
@@ -104,7 +109,7 @@ static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
 static PRM_Range groundRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
 static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
 static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
-
+static PRM_Range gravityRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
 
 
 
@@ -122,6 +127,7 @@ SOP_SnowSim::myTemplateList[] = {
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &youngRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
 
+	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravityDefaults,     0, &gravityRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),

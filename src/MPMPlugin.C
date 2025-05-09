@@ -63,11 +63,11 @@ static PRM_Name youngName("young_modulus", "YoungsMod");
 static PRM_Name poissonName("poisson", "Poisson");
 
 // Simulation Tab
-static PRM_Name gravityName("gravity", "Gravity Force");
-static PRM_Name timeStepName("dt", "Time Step");
-static PRM_Name groundName("ground_plane", "Ground Plane");
-static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
-static PRM_Name boundsPosName("sim_pos", "Simulation Position");
+//static PRM_Name gravityName("gravity", "Gravity Force");
+//static PRM_Name timeStepName("dt", "Time Step");
+//static PRM_Name groundName("ground_plane", "Ground Plane");
+//static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
+//static PRM_Name boundsPosName("sim_pos", "Simulation Position");
 //static PRM_Name resetName("reset_cache", "Reset Cache");
 
 
@@ -86,20 +86,20 @@ static PRM_Default poissonDefault(0.4);
 
 ////////////////////////////////////////////
 
-static PRM_Default timestepDefault(0.001);
-static PRM_Default groundDefault(-2.5);
-//Default for vector parameters
-static PRM_Default boundSizeDefault[] = {
-	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
-};
-static PRM_Default boundPosDefault[] = {
-	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
-};
-static PRM_Default gravityDefaults[] = {
-    PRM_Default(0.0f), // X
-    PRM_Default(-9.8f), // Y
-    PRM_Default(0.0f)  // Z
-};
+//static PRM_Default timestepDefault(0.001);
+//static PRM_Default groundDefault(-2.5);
+////Default for vector parameters
+//static PRM_Default boundSizeDefault[] = {
+//	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
+//};
+//static PRM_Default boundPosDefault[] = {
+//	PRM_Default(0.0), PRM_Default(0.0), PRM_Default(0.0)
+//};
+//static PRM_Default gravityDefaults[] = {
+//    PRM_Default(0.0f), // X
+//    PRM_Default(-9.8f), // Y
+//    PRM_Default(0.0f)  // Z
+//};
 
 
 // RANGES
@@ -110,11 +110,11 @@ static PRM_Range densityRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1000.0);
 static PRM_Range youngRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1e6);
 static PRM_Range poissonRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.499);
 
-static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
-static PRM_Range groundRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
-static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
-static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
-static PRM_Range gravityRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+//static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
+//static PRM_Range groundRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+//static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
+//static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+//static PRM_Range gravityRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
 
 
 
@@ -132,11 +132,11 @@ SOP_SnowSim::myTemplateList[] = {
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &youngRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
 
-	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravityDefaults,     0, &gravityRange),
-	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
-	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
-	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
-	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
+	//PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravityDefaults,     0, &gravityRange),
+	//PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
+	//PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
+	//PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
+	//PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
 
 
 
@@ -284,10 +284,10 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 	float youngModulus = YOUNG_MODULUS(now);
 	float poisson = POISSON(now);
 
-	float timeStep = TIME_STEP(now);
-	float groundPlane = GROUND_PLANE(now);
-	Eigen::Vector3f boundsSize = Eigen::Vector3f(BOUNDS_SIZE(now)[0], BOUNDS_SIZE(now)[1], BOUNDS_SIZE(now)[2]);
-	Eigen::Vector3f boundsPos = Eigen::Vector3f(BOUNDS_POS(now)[0], BOUNDS_POS(now)[1], BOUNDS_POS(now)[2]);
+	//float timeStep = TIME_STEP(now);
+	//float groundPlane = GROUND_PLANE(now);
+	//Eigen::Vector3f boundsSize = Eigen::Vector3f(BOUNDS_SIZE(now)[0], BOUNDS_SIZE(now)[1], BOUNDS_SIZE(now)[2]);
+	//Eigen::Vector3f boundsPos = Eigen::Vector3f(BOUNDS_POS(now)[0], BOUNDS_POS(now)[1], BOUNDS_POS(now)[2]);
 
 	if (frame <= 1) {
 
@@ -298,11 +298,11 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 			float hardeningCoeff, float initialDensity, float youngsMod,
 			float poissonRatio);*/
 
-		/*solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
-					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35);*/
+		solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
+					0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35, nullptr);
 
-		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
-			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, vdbPrimSDF);
+		//solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
+		//	critCompression, critStretch, hardening, initDensity, youngModulus, poisson, vdbPrimSDF);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {
@@ -343,72 +343,72 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 	// GROUND PLANE
 
-	if (frame == 1) {
-		float size = 5.0f;
+	//if (frame == 1) {
+	//	float size = 5.0f;
 
-		UT_Vector3 p0(-size, groundPlane, -size);
-		UT_Vector3 p1(size, groundPlane, -size);
-		UT_Vector3 p2(size, groundPlane, size);
-		UT_Vector3 p3(-size, groundPlane, size);
+	//	UT_Vector3 p0(-size, groundPlane, -size);
+	//	UT_Vector3 p1(size, groundPlane, -size);
+	//	UT_Vector3 p2(size, groundPlane, size);
+	//	UT_Vector3 p3(-size, groundPlane, size);
 
-		GA_Offset pt0 = gdp->appendPointOffset();
-		GA_Offset pt1 = gdp->appendPointOffset();
-		GA_Offset pt2 = gdp->appendPointOffset();
-		GA_Offset pt3 = gdp->appendPointOffset();
+	//	GA_Offset pt0 = gdp->appendPointOffset();
+	//	GA_Offset pt1 = gdp->appendPointOffset();
+	//	GA_Offset pt2 = gdp->appendPointOffset();
+	//	GA_Offset pt3 = gdp->appendPointOffset();
 
-		gdp->setPos3(pt0, p0);
-		gdp->setPos3(pt1, p1);
-		gdp->setPos3(pt2, p2);
-		gdp->setPos3(pt3, p3);
+	//	gdp->setPos3(pt0, p0);
+	//	gdp->setPos3(pt1, p1);
+	//	gdp->setPos3(pt2, p2);
+	//	gdp->setPos3(pt3, p3);
 
-		GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
-		quad->appendVertex(pt0);
-		quad->appendVertex(pt1);
-		quad->appendVertex(pt2);
-		quad->appendVertex(pt3);
-		quad->close();
+	//	GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
+	//	quad->appendVertex(pt0);
+	//	quad->appendVertex(pt1);
+	//	quad->appendVertex(pt2);
+	//	quad->appendVertex(pt3);
+	//	quad->close();
 
-		// Optional: color the plane gray
-		//GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
-		//cd.set(pt0, UT_Vector3(0.4f));
-		//cd.set(pt1, UT_Vector3(0.4f));
-		//cd.set(pt2, UT_Vector3(0.4f));
-		//cd.set(pt3, UT_Vector3(0.4f));
-	}
+	//	// Optional: color the plane gray
+	//	//GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
+	//	//cd.set(pt0, UT_Vector3(0.4f));
+	//	//cd.set(pt1, UT_Vector3(0.4f));
+	//	//cd.set(pt2, UT_Vector3(0.4f));
+	//	//cd.set(pt3, UT_Vector3(0.4f));
+	//}
 	
 
 
 	// BOUNDING BOX ( ONLY SHOW AT INITIALIZATION )
-	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
-	UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
+	//UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
+	//UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
 
-	if (frame == 1) {
-		GA_Offset bb[8];
-		for (int k = 0; k < 2; ++k) {
-			for (int j = 0; j < 2; ++j) {
-				for (int i = 0; i < 2; ++i) {
-					int idx = i + 2 * (j + 2 * k);
-					bb[idx] = gdp->appendPoint();
-					UT_Vector3 p(
-						center.x() + (i ? half.x() : -half.x()),
-						center.y() + (j ? half.y() : -half.y()),
-						center.z() + (k ? half.z() : -half.z())
-					);
-					gdp->setPos3(bb[idx], p);
-				}
-			}
-		}
+	//if (frame == 1) {
+	//	GA_Offset bb[8];
+	//	for (int k = 0; k < 2; ++k) {
+	//		for (int j = 0; j < 2; ++j) {
+	//			for (int i = 0; i < 2; ++i) {
+	//				int idx = i + 2 * (j + 2 * k);
+	//				bb[idx] = gdp->appendPoint();
+	//				UT_Vector3 p(
+	//					center.x() + (i ? half.x() : -half.x()),
+	//					center.y() + (j ? half.y() : -half.y()),
+	//					center.z() + (k ? half.z() : -half.z())
+	//				);
+	//				gdp->setPos3(bb[idx], p);
+	//			}
+	//		}
+	//	}
 
-		auto drawEdge = [&](int a, int b) {
-			GU_PrimPoly* line = GU_PrimPoly::build(gdp, false);
-			line->appendVertex(bb[a]);
-			line->appendVertex(bb[b]);
-			};
+	//	auto drawEdge = [&](int a, int b) {
+	//		GU_PrimPoly* line = GU_PrimPoly::build(gdp, false);
+	//		line->appendVertex(bb[a]);
+	//		line->appendVertex(bb[b]);
+	//		};
 
-		drawEdge(0, 1); drawEdge(1, 3); drawEdge(3, 2); drawEdge(2, 0); // bottom
-		drawEdge(4, 5); drawEdge(5, 7); drawEdge(7, 6); drawEdge(6, 4); // top
-		drawEdge(0, 4); drawEdge(1, 5); drawEdge(2, 6); drawEdge(3, 7); // sides
-	}
+	//	drawEdge(0, 1); drawEdge(1, 3); drawEdge(3, 2); drawEdge(2, 0); // bottom
+	//	drawEdge(4, 5); drawEdge(5, 7); drawEdge(7, 6); drawEdge(6, 4); // top
+	//	drawEdge(0, 4); drawEdge(1, 5); drawEdge(2, 6); drawEdge(3, 7); // sides
+	//}
 
 
 

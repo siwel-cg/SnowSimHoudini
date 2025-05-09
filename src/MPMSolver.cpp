@@ -39,6 +39,18 @@ void MPMSolver::addParticle(const MPMParticle& particle) {
     particles.push_back(particle);
 }
 
+const std::vector<MPMParticle>& MPMSolver::getParticles() const {
+    return particles;
+}
+
+void MPMSolver::step() {
+    grid.clearGrid();
+    particleToGridTransfer();
+    computeForce();
+    updateGridVel();
+    updateParticleDefGrad();
+}
+
 // THIS IS HELPER FUNCTION FOR COMPUTING WEIGHTING
 // TODO : ENSURE ALL WEIGHTS IN KERNEL ADD UP TO 1
 static float weightFun(float x) {
@@ -267,29 +279,6 @@ void MPMSolver::updateParticleDefGrad() {
     }
 
 
-    // glm::vec3 minCorner = grid.center - 0.5f * grid.dimension;
-    // glm::vec3 maxCorner = grid.center + 0.5f * grid.dimension;
-
-
-    // //THIS IS DOING NOTHING : :
-    // float damping = 0.0f; // or try 0.01f, 0.1f for bounciness
-    // for (MPMParticle &p : particles) {
-    //     for (int axis = 0; axis < 3; ++axis) {
-    //         if (p.position[axis] < minCorner[axis]) {
-    //             p.position[axis] = minCorner[axis];
-    //             if (p.velocity[axis] < 0.f) {
-    //                 p.velocity[axis] *= -damping;
-    //             }
-    //         }
-
-    //         if (p.position[axis] > maxCorner[axis]) {
-    //             p.position[axis] = maxCorner[axis];
-    //             if (p.velocity[axis] > 0.f) {
-    //                 p.velocity[axis] *= -damping;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 // [======] GRID FUNCTIONS [======]
@@ -351,17 +340,7 @@ void MPMSolver::particleToGridTransfer() {
 
     }
 
-    // // Normalize grid node velocities using only effective mass
-    // for (GridNode& node : grid.gridNodes) {
-    //     if (node.velocityMass > 0.f) {
-    //         node.velocity /= node.velocityMass;
-    //     } else {
-    //         node.velocity = glm::vec3(0.f);
-    //     }
-    // }
-
-    // Currently the velocity stored is actually the total weighted momentum
-    // To convert it to actual vel we divide each gridCell by its mass
+    
     grid.divideMass();
 }
 
@@ -478,8 +457,6 @@ void MPMSolver::computeForce() {
         g.force = Eigen::Vector3f(0.f, 0.f, 0.f);
     }
 
-    UT_Vector3 gravity = GRAVITY(context.getTime());
-
     float xMin = grid.center[0] - 0.5f * grid.dimension[0];
     float yMin = grid.center[1] - 0.5f * grid.dimension[1];
     float zMin = grid.center[2] - 0.5f * grid.dimension[2];
@@ -528,7 +505,7 @@ void MPMSolver::computeForce() {
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
                     //
                     curNode.force -= (p.volume * p.sigma * gradWeight);
-                    curNode.force += weight * Eigen::Vector3f(gravity.x(), gravity.y(), gravity.z()) * p.mass;
+                    curNode.force += weight * Eigen::Vector3f(0.0, gravity, 0.0) * p.mass;
                 }
             }
         }

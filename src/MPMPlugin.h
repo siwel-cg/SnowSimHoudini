@@ -88,8 +88,6 @@ namespace HDK_Sample {
         // NOTE : You can declare local variables here like this  
         int		myCurrPoint;
         int		myTotalPoints;
-
-        
         int     prevFrame;
 
 
@@ -103,20 +101,20 @@ namespace HDK_Sample {
         fpreal POISSON(fpreal t) { return evalFloat("poisson", 0, t); }
 
 		// SIMULATION TAB
-		fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
-        fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
+		//fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
+  //      fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
 
-        UT_Vector3 BOUNDS_SIZE(fpreal t) {
-            return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
-        }
+  //      UT_Vector3 BOUNDS_SIZE(fpreal t) {
+  //          return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
+  //      }
 
-        UT_Vector3 BOUNDS_POS(fpreal t) {
-            return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
-        }
+  //      UT_Vector3 BOUNDS_POS(fpreal t) {
+  //          return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
+  //      }
 
-        UT_Vector3 GRAVITY(fpreal t) {
-            return UT_Vector3(evalFloat("gravity", 0, t), evalFloat("gravity", 1, t), evalFloat("gravity", 2, t));
-        }
+  //      UT_Vector3 GRAVITY(fpreal t) {
+  //          return UT_Vector3(evalFloat("gravity", 0, t), evalFloat("gravity", 1, t), evalFloat("gravity", 2, t));
+  //      }
 
     };
 } // End HDK_Sample namespace

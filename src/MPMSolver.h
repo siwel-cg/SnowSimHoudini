@@ -53,10 +53,6 @@ private:
     mpmgrid grid;
 
 
-    Eigen::Vector3f computeGravity(const MPMParticle& p);
-    Eigen::Vector3f computeCohesion(const MPMParticle& p);
-    void integrate(MPMParticle& p, Eigen::Vector3f force);
-
     // PARTICLE FUNCTIONS
     void computeSigma();
     void updateParticleDefGrad();

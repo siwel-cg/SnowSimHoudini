@@ -9,8 +9,10 @@
 #include <GU/GU_PrimPoly.h>
 #include <GU/GU_PrimVDB.h>
 #include <CH/CH_LocalVariable.h>
+
 #include <PRM/PRM_Include.h>
 #include <PRM/PRM_SpareData.h>
+
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 
@@ -54,6 +56,10 @@ newSopOperator(OP_OperatorTable *table)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Add these names at top:
+static PRM_Name pageMatName("mat_props", "Material Properties");
+static PRM_Name pageSimName("sim_setup", "Simulation Settings");
+
 //Material Properties Tab
 static PRM_Name compressionName("crit_compression", "CritCompression");
 static PRM_Name stretchName("crit_stretch", "CritStretch");
@@ -61,6 +67,7 @@ static PRM_Name hardeningName("hardening", "Hardening");
 static PRM_Name densityName("init_density", "Density");
 static PRM_Name youngName("young_modulus", "YoungsMod");
 static PRM_Name poissonName("poisson", "Poisson");
+
 
 // Simulation Tab
 static PRM_Name timeStepName("dt", "Time Step");
@@ -113,27 +120,26 @@ static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-PRM_Template
-SOP_SnowSim::myTemplateList[] = {
-
-
+PRM_Template SOP_SnowSim::myTemplateList[] = {
+	// --- Tab: Material Properties ---
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &compressionRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName, &stretchDefault, 0, &stretchRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName, &hardeningDefault, 0, &hardeningRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName, &densityDefault, 0, &densityRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName, &youngDefault, 0, &youngRange),
-	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName, &poissonDefault, 0, &poissonRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName,     &stretchDefault,     0, &stretchRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName,   &hardeningDefault,   0, &hardeningRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &densityName,     &densityDefault,     0, &densityRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName,       &youngDefault,       0, &youngRange),
+	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName,     &poissonDefault,     0, &poissonRange),
 
 
+
+	PRM_Template(PRM_SEPARATOR),
+
+	// --- Tab: Simulation Settings ---
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
 
-
-	/////////////////////////////////////////////////////////////////////////////////////////////
-
-	PRM_Template()
+	PRM_Template() // end
 };
 
 
@@ -326,38 +332,38 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 	// GROUND PLANE
 
-	//if (frame == 1) {
-	//	float size = 5.0f;
+	if (frame == 1) {
+		float size = 5.0f;
 
-	//	UT_Vector3 p0(-size, groundPlane, -size);
-	//	UT_Vector3 p1(size, groundPlane, -size);
-	//	UT_Vector3 p2(size, groundPlane, size);
-	//	UT_Vector3 p3(-size, groundPlane, size);
+		UT_Vector3 p0(-size, groundPlane, -size);
+		UT_Vector3 p1(size, groundPlane, -size);
+		UT_Vector3 p2(size, groundPlane, size);
+		UT_Vector3 p3(-size, groundPlane, size);
 
-	//	GA_Offset pt0 = gdp->appendPointOffset();
-	//	GA_Offset pt1 = gdp->appendPointOffset();
-	//	GA_Offset pt2 = gdp->appendPointOffset();
-	//	GA_Offset pt3 = gdp->appendPointOffset();
+		GA_Offset pt0 = gdp->appendPointOffset();
+		GA_Offset pt1 = gdp->appendPointOffset();
+		GA_Offset pt2 = gdp->appendPointOffset();
+		GA_Offset pt3 = gdp->appendPointOffset();
 
-	//	gdp->setPos3(pt0, p0);
-	//	gdp->setPos3(pt1, p1);
-	//	gdp->setPos3(pt2, p2);
-	//	gdp->setPos3(pt3, p3);
+		gdp->setPos3(pt0, p0);
+		gdp->setPos3(pt1, p1);
+		gdp->setPos3(pt2, p2);
+		gdp->setPos3(pt3, p3);
 
-	//	GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
-	//	quad->appendVertex(pt0);
-	//	quad->appendVertex(pt1);
-	//	quad->appendVertex(pt2);
-	//	quad->appendVertex(pt3);
-	//	quad->close();
+		GEO_PrimPoly* quad = (GEO_PrimPoly*)gdp->appendPrimitive(GA_PRIMPOLY);
+		quad->appendVertex(pt0);
+		quad->appendVertex(pt1);
+		quad->appendVertex(pt2);
+		quad->appendVertex(pt3);
+		quad->close();
 
-	//	// Optional: color the plane gray
-	//	//GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
-	//	//cd.set(pt0, UT_Vector3(0.4f));
-	//	//cd.set(pt1, UT_Vector3(0.4f));
-	//	//cd.set(pt2, UT_Vector3(0.4f));
-	//	//cd.set(pt3, UT_Vector3(0.4f));
-	//}
+		// Optional: color the plane gray
+		//GA_RWHandleV3 cd(gdp->addAttrib("Cd", GA_ATTRIB_POINT, UT_Vector3(0.4f, 0.4f, 0.4f)));
+		//cd.set(pt0, UT_Vector3(0.4f));
+		//cd.set(pt1, UT_Vector3(0.4f));
+		//cd.set(pt2, UT_Vector3(0.4f));
+		//cd.set(pt3, UT_Vector3(0.4f));
+	}
 	
 
 

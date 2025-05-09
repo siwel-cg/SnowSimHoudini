@@ -56,10 +56,6 @@ newSopOperator(OP_OperatorTable *table)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Add these names at top:
-static PRM_Name pageMatName("mat_props", "Material Properties");
-static PRM_Name pageSimName("sim_setup", "Simulation Settings");
-
 //Material Properties Tab
 static PRM_Name compressionName("crit_compression", "CritCompression");
 static PRM_Name stretchName("crit_stretch", "CritStretch");
@@ -71,6 +67,7 @@ static PRM_Name poissonName("poisson", "Poisson");
 
 // Simulation Tab
 static PRM_Name timeStepName("dt", "Time Step");
+static PRM_Name gravityName("grav", "Gravity");
 static PRM_Name groundName("ground_plane", "Ground Plane");
 static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
 static PRM_Name boundsPosName("sim_pos", "Simulation Position");
@@ -92,8 +89,12 @@ static PRM_Default poissonDefault(0.4);
 ////////////////////////////////////////////
 
 static PRM_Default timestepDefault(0.001);
+static PRM_Default gravForceDefault[] = {
+	PRM_Default(0.0), PRM_Default(-9.81f), PRM_Default(0.0)
+};
+
 static PRM_Default groundDefault(-2.5);
-////Default for vector parameters
+
 static PRM_Default boundSizeDefault[] = {
 	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
 };
@@ -111,7 +112,8 @@ static PRM_Range youngRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 1e6);
 static PRM_Range poissonRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.499);
 
 static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
-static PRM_Range groundRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range gravityRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range groundRange(PRM_RANGE_UI, -50.0, PRM_RANGE_RESTRICTED, 50.0);
 static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
 static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
 
@@ -133,6 +135,7 @@ PRM_Template SOP_SnowSim::myTemplateList[] = {
 
 	// --- Tab: Simulation Settings ---
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
+	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravForceDefault,    0, &gravityRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
@@ -274,6 +277,9 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 	float poisson = POISSON(now);
 
 	float timeStep = TIME_STEP(now);
+
+	Eigen::Vector3f gravInput = Eigen::Vector3f(GRAVITY_FORCE(now)[0], GRAVITY_FORCE(now)[1], GRAVITY_FORCE(now)[2]);
+
 	float groundPlane = GROUND_PLANE(now);
 
 	Eigen::Vector3f boundsSize = Eigen::Vector3f(BOUNDS_SIZE(now)[0], BOUNDS_SIZE(now)[1], BOUNDS_SIZE(now)[2]);
@@ -292,7 +298,7 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		//			0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35, nullptr);
 
 		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
-			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, this->vdbPrimSDF);
+			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, this->vdbPrimSDF, gravInput);
 
 		const GU_Detail* inGdp = inputGeo(0, context);
 		if (inGdp) {

@@ -84,6 +84,11 @@ namespace HDK_Sample {
 
 		// SIMULATION TAB
 		fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
+
+        UT_Vector3 GRAVITY_FORCE(fpreal t) {
+            return UT_Vector3(evalFloat("grav", 0, t), evalFloat("grav", 1, t), evalFloat("grav", 2, t));
+        }
+
         fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
 
         UT_Vector3 BOUNDS_SIZE(fpreal t) {

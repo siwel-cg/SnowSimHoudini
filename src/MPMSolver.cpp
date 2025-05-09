@@ -13,6 +13,7 @@ MPMSolver::MPMSolver() :
     , youngsMod(140000.0f)
     , poissonRatio(0.2f)
     , vdbPrimSDF(nullptr)
+    , gravity(Eigen::Vector3f(0.0, -9.8f, 0.0))
 {
     groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
@@ -22,10 +23,10 @@ MPMSolver::MPMSolver() :
 
 MPMSolver::MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
     float critCompression, float critStretch, float hardeningCoeff,
-    float initialDensity, float youngsMod, float poissonRatio, const GU_PrimVDB* vdbPrimSDF)
+    float initialDensity, float youngsMod, float poissonRatio, const GU_PrimVDB* vdbPrimSDF, Eigen::Vector3f gravIn)
     : stepSize(dt), grid(Eigen::Vector3f(gridDim), spacing, Eigen::Vector3f(gridOrigin)), groundPlaneY(groundPlane),
     critCompression(critCompression), critStretch(critStretch), hardeningCoeff(hardeningCoeff),
-    initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), vdbPrimSDF(vdbPrimSDF)
+    initialDensity(initialDensity), youngsMod(youngsMod), poissonRatio(poissonRatio), vdbPrimSDF(vdbPrimSDF), gravity(gravIn)
 {
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
@@ -196,7 +197,7 @@ void MPMSolver::updateParticleDefGrad() {
         }
 
         vFlip += p.velocity;
-        float alpha = 0.95f;
+        float alpha = 0.84f;
 
         p.velocity = (1.f - alpha) * vPic + alpha * vFlip;
         //const float damping = 0.01f;     // 1% velocity loss each step
@@ -475,7 +476,7 @@ void MPMSolver::computeForce() {
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
                     //
                     curNode.force -= (p.volume * p.sigma * gradWeight);
-                    curNode.force += weight * Eigen::Vector3f(0.0, -30.1f, 0.0) * p.mass;
+                    curNode.force += weight * gravity * p.mass;
                 }
             }
         }

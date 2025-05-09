@@ -22,7 +22,7 @@ public:
     MPMSolver(Eigen::Vector3f gridDim, float spacing, Eigen::Vector3f gridOrigin, float groundPlane, float dt,
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
-        float poissonRatio, const GU_PrimVDB* vdbPrimSDF);
+        float poissonRatio, const GU_PrimVDB* vdbPrimSDF, Eigen::Vector3f gravIn);
 
     void addParticle(const MPMParticle& particle);
 	const std::vector<MPMParticle>& getParticles() const;
@@ -34,7 +34,7 @@ public:
     float initialDensity;
     float youngsMod;
     float poissonRatio;
-
+    Eigen::Vector3f gravity;
     float groundPlaneY;
 
     const GU_PrimVDB* vdbPrimSDF = nullptr;

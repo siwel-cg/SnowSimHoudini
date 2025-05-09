@@ -66,26 +66,8 @@ namespace HDK_Sample {
         }
 
     private:
-        /// The following list of accessors simplify evaluating the parameters
-        /// of the SOP.
+         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // PUT YOUR CODE HERE
-        // Here you need to declare functions which need to be called from the .C file to 
-        // constantly update the cook function, these functions help you get the current value that the node has
-        // Example : To declare a function to fetch angle you need to do it this way 
-        // fpreal  ANGLE(fpreal t)     { return evalFloat("angle", 0, t); }
-
-
-
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// Member variables are stored in the actual SOP, not with the geometry
-        /// In this case these are just used to transfer data to the local 
-        /// variable callback.
-        /// Another use for local data is a cache to store expensive calculations.
-
-        // NOTE : You can declare local variables here like this  
         int		myCurrPoint;
         int		myTotalPoints;
         int     prevFrame;
@@ -101,22 +83,20 @@ namespace HDK_Sample {
         fpreal POISSON(fpreal t) { return evalFloat("poisson", 0, t); }
 
 		// SIMULATION TAB
-		//fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
-  //      fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
+		fpreal TIME_STEP(fpreal t) { return evalFloat("dt", 0, t); }
+        fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
 
-  //      UT_Vector3 BOUNDS_SIZE(fpreal t) {
-  //          return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
-  //      }
+        UT_Vector3 BOUNDS_SIZE(fpreal t) {
+            return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
+        }
 
-  //      UT_Vector3 BOUNDS_POS(fpreal t) {
-  //          return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
-  //      }
+        UT_Vector3 BOUNDS_POS(fpreal t) {
+            return UT_Vector3(evalFloat("sim_pos", 0, t), evalFloat("sim_pos", 1, t), evalFloat("sim_pos", 2, t));
+        }
 
-  //      UT_Vector3 GRAVITY(fpreal t) {
-  //          return UT_Vector3(evalFloat("gravity", 0, t), evalFloat("gravity", 1, t), evalFloat("gravity", 2, t));
-  //      }
+
 
     };
-} // End HDK_Sample namespace
+}
 
 #endif

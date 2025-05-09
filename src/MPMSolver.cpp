@@ -3,10 +3,6 @@
 
 #include <Eigen/Dense>
 
-const float dt = 0.01f; // Time step
-const float gravity = 30.81f; // Gravity acceleration
-const float cohesionStrength = 0.1f; // Cohesion force factor
-
 MPMSolver::MPMSolver() :
      stepSize(0.00001f)
     , grid(Eigen::Vector3f(1.0f, 1.0f, 1.0f), 0.05f, Eigen::Vector3f(0.0f, 0.0f, 0.0f))
@@ -16,11 +12,11 @@ MPMSolver::MPMSolver() :
     , initialDensity(400.0f)
     , youngsMod(140000.0f)
     , poissonRatio(0.2f)
+    , vdbPrimSDF(nullptr)
 {
     groundPlaneY = 0.0;
     mu0 = youngsMod / (2.f * (1.f + poissonRatio));
     lambda0 = (youngsMod * poissonRatio) / ((1.f + poissonRatio) * (1.f - 2.f * poissonRatio));
-    const GU_PrimVDB* vdbPrimSDF = nullptr;
 } 
 
 
@@ -66,17 +62,6 @@ static float weightFun(float x) {
     }
 }
 
-// static float weightFunGradient (float x) {
-//     x = abs(x);
-//     if (x > 0.f && x < 1.f) {
-//         return 3.f*abs(x)/(2.f*x) - 2.f*x;
-//     } else if (x >= 1.f && x < 2.f) {
-//         return -abs(x)/(2.f*x)*x*x + 2.f*x - 2.f*(abs(x)/x);
-//     } else {
-//         return 0.0f;
-//     }
-// }
-
 static float weightFunGradient(float x)
 {
     const float ax = std::abs(x);
@@ -117,7 +102,6 @@ void MPMSolver::computeSigma() {
 
         if (bad(Je) || bad(Jp) || bad(Jtot))
         {
-            //std::cout << "WAHOOO" << std::endl;
             p.FE = Eigen::Matrix3f::Identity();
             p.FP = Eigen::Matrix3f::Identity();
             p.sigma = Eigen::Matrix3f::Zero();
@@ -251,16 +235,6 @@ void MPMSolver::updateParticleDefGrad() {
     
         Eigen::Matrix3f FE_new = U * Sigma_clamped * V.transpose();
         Eigen::Matrix3f Fp_old = p.FP;
-        /*for (int c = 0; c < 3; ++c) {
-            for (int r = 0; r < 3; ++r) {
-                Fp_old(r, c) = p.FP[r][c];
-            }
-        }*/
-
-        // Eigen::Matrix3f F_total_eigen;
-        // for (int col = 0; col < 3; ++col)
-        //     for (int row = 0; row < 3; ++row)
-        //         F_total_eigen(row, col) = F_total[col][row];
 
         // Update FP using: FP = V * Σ⁻¹ * Uᵀ * F_total
         Eigen::Matrix3f Sigma_inv = Eigen::Matrix3f::Zero();
@@ -277,7 +251,6 @@ void MPMSolver::updateParticleDefGrad() {
         // UPDATE POINT POSITIONS
         p.position += stepSize * p.velocity;
     }
-
 
 }
 
@@ -331,9 +304,6 @@ void MPMSolver::particleToGridTransfer() {
                     curNode.mass += p.mass * weight;
                     curNode.velocity += p.velocity * p.mass * weight;
 
-                    // if (glm::length(p.velocity) > 1e-6f) { // Only if velocity is non-zero
-                    //     curNode.velocityMass += curNode.mass;
-                    // }
                 }
             }
         }
@@ -505,7 +475,7 @@ void MPMSolver::computeForce() {
                     float weight = weightFun(xGrid) * weightFun(yGrid) * weightFun(zGrid);
                     //
                     curNode.force -= (p.volume * p.sigma * gradWeight);
-                    curNode.force += weight * Eigen::Vector3f(0.0, gravity, 0.0) * p.mass;
+                    curNode.force += weight * Eigen::Vector3f(0.0, -30.1f, 0.0) * p.mass;
                 }
             }
         }

@@ -23,9 +23,8 @@ public:
         float critCompression, float critStretch,
         float hardeningCoeff, float initialDensity, float youngsMod,
         float poissonRatio, const GU_PrimVDB* vdbPrimSDF);
-    void addParticle(const MPMParticle& particle);
-    void computeForcesAndIntegrate();
 
+    void addParticle(const MPMParticle& particle);
 	const std::vector<MPMParticle>& getParticles() const;
     
     float stepSize;
@@ -38,7 +37,7 @@ public:
 
     float groundPlaneY;
 
-    const GU_PrimVDB* vdbPrimSDF;
+    const GU_PrimVDB* vdbPrimSDF = nullptr;
 
     float mu0;
     float lambda0;

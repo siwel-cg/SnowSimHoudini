@@ -129,9 +129,7 @@ PRM_Template SOP_SnowSim::myTemplateList[] = {
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName,       &youngDefault,       0, &youngRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName,     &poissonDefault,     0, &poissonRange),
 
-
-
-	PRM_Template(PRM_SEPARATOR),
+	PRM_Template(PRM_SEPARATOR), // DIVIDER LINE :P
 
 	// --- Tab: Simulation Settings ---
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
@@ -265,6 +263,9 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 		readSDFFromVDB(sdfGdp);
 	}
 
+	GA_ROHandleV3 velHandle(inGdp->findAttribute(GA_ATTRIB_POINT, "v"));
+
+
 	float critCompression = CRIT_COMPRESSION(now);
 	float critStretch = CRIT_STRETCH(now);
 	float hardening = HARDENING(now);
@@ -300,6 +301,10 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 				const UT_Vector3 pos = inGdp->getPos3(ptoff);
 				Eigen::Vector3f position(pos.x(), pos.y(), pos.z());
 				Eigen::Vector3f velocity(0.0f, 0.0f, 0.0f);
+				if (velHandle.isValid()) {
+					UT_Vector3 vel = velHandle.get(ptoff);
+					velocity = Eigen::Vector3f(vel.x(), vel.y(), vel.z());
+				}
 				float mass = 1.0f;
 
 				solver.addParticle(MPMParticle(position, velocity, mass));

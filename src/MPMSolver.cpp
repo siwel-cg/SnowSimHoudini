@@ -196,11 +196,11 @@ void MPMSolver::updateParticleDefGrad() {
         }
 
         vFlip += p.velocity;
-        float alpha = 0.80f;
+        float alpha = 0.95f;
 
         p.velocity = (1.f - alpha) * vPic + alpha * vFlip;
-        const float damping = 0.01f;     // 1% velocity loss each step
-        p.velocity *= (1.0f - damping);
+        //const float damping = 0.01f;     // 1% velocity loss each step
+        //p.velocity *= (1.0f - damping);
 
         // UPDATE DEFORMATION GRADIENT
         p.FE = (Eigen::Matrix3f::Identity() + stepSize * velGrad) * p.FE;

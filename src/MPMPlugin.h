@@ -91,6 +91,14 @@ namespace HDK_Sample {
 
         fpreal GROUND_PLANE(fpreal t) { return evalFloat("ground_plane", 0, t); }
 
+        int FRAME_START(fpreal t) {
+            return evalInt("sim_range", 0, t);
+        }
+
+        int FRAME_END(fpreal t) {
+            return evalInt("sim_range", 1, t);
+        }
+
         UT_Vector3 BOUNDS_SIZE(fpreal t) {
             return UT_Vector3(evalFloat("sim_bounds", 0, t), evalFloat("sim_bounds", 1, t), evalFloat("sim_bounds", 2, t));
         }

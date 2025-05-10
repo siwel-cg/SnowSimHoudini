@@ -69,6 +69,7 @@ static PRM_Name poissonName("poisson", "Poisson");
 static PRM_Name timeStepName("dt", "Time Step");
 static PRM_Name gravityName("grav", "Gravity");
 static PRM_Name groundName("ground_plane", "Ground Plane");
+static PRM_Name frameRangeName("sim_range", "Simulation Range");
 static PRM_Name boundsSizeName("sim_bounds", "Simulation Bounds");
 static PRM_Name boundsPosName("sim_pos", "Simulation Position");
 
@@ -95,6 +96,8 @@ static PRM_Default gravForceDefault[] = {
 
 static PRM_Default groundDefault(-2.5);
 
+static PRM_Default frameRangeDefault[] = { PRM_Default(1), PRM_Default(24) };
+
 static PRM_Default boundSizeDefault[] = {
 	PRM_Default(2.5), PRM_Default(2.5), PRM_Default(2.5)
 };
@@ -114,8 +117,9 @@ static PRM_Range poissonRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.499);
 static PRM_Range timeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 0.01);
 static PRM_Range gravityRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
 static PRM_Range groundRange(PRM_RANGE_UI, -50.0, PRM_RANGE_RESTRICTED, 50.0);
-static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_RESTRICTED, 100.0);
-static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_RESTRICTED, 100.0);
+static PRM_Range frameRange(PRM_RANGE_UI, 0, PRM_RANGE_FREE, 100000);
+static PRM_Range boundsSizeRange(PRM_RANGE_UI, 0.0, PRM_RANGE_FREE, 100.0);
+static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_FREE, 100.0);
 
 
 
@@ -131,12 +135,13 @@ PRM_Template SOP_SnowSim::myTemplateList[] = {
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &youngName,       &youngDefault,       0, &youngRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &poissonName,     &poissonDefault,     0, &poissonRange),
 
-	PRM_Template(PRM_SEPARATOR), // DIVIDER LINE :P
+	PRM_Template(PRM_SEPARATOR, 0, 0), // DIVIDER LINE :P
 
 	// --- Tab: Simulation Settings ---
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravForceDefault,    0, &gravityRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),
+	PRM_Template(PRM_INT_J,  PRM_Template::PRM_EXPORT_MIN, 2, &frameRangeName, frameRangeDefault,  0, &frameRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsSizeName,  boundSizeDefault,    0, &boundsSizeRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &boundsPosName,   boundPosDefault,     0, &boundsPosRange),
 
@@ -278,14 +283,20 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 	float timeStep = TIME_STEP(now);
 
+
 	Eigen::Vector3f gravInput = Eigen::Vector3f(GRAVITY_FORCE(now)[0], GRAVITY_FORCE(now)[1], GRAVITY_FORCE(now)[2]);
 
 	float groundPlane = GROUND_PLANE(now);
+	int startFrame = FRAME_START(now);
+	int endFrame = FRAME_END(now);
+
 
 	Eigen::Vector3f boundsSize = Eigen::Vector3f(BOUNDS_SIZE(now)[0], BOUNDS_SIZE(now)[1], BOUNDS_SIZE(now)[2]);
 	Eigen::Vector3f boundsPos = Eigen::Vector3f(BOUNDS_POS(now)[0], BOUNDS_POS(now)[1], BOUNDS_POS(now)[2]);
 
-	if (frame <= 1) {
+
+
+	if (frame <= startFrame) {
 
 		// RESET SOLVER 
 
@@ -294,8 +305,8 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 			float hardeningCoeff, float initialDensity, float youngsMod,
 			float poissonRatio);*/
 
-		//solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
-		//			0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35, nullptr);
+			//solver = MPMSolver(Eigen::Vector3f(2.5, 2.5, 2.5), 0.1, Eigen::Vector3f(0.0f, 0.0f, 0.0f), -2.5, 0.001,
+			//			0.05f, 0.005f, 10.f, 600.f, 180000.f, 0.35, nullptr);
 
 		solver = MPMSolver(boundsSize, 0.1, boundsPos, groundPlane, timeStep,
 			critCompression, critStretch, hardening, initDensity, youngModulus, poisson, this->vdbPrimSDF, gravInput);
@@ -317,16 +328,16 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 			}
 		}
 
-
 		solver.computeInitialDensity();
-		prevFrame = 1;
+		prevFrame = startFrame;
 	}
 
-
-	for (int f = prevFrame + 1; f <= frame; ++f) {
-		solver.step();
+	if (frame <= endFrame && frame >= startFrame) {
+		for (int f = prevFrame + 1; f <= frame; ++f) {
+			solver.step();
+		}
+		prevFrame = frame;
 	}
-	prevFrame = frame;
 
 	unlockInputs();
 
@@ -343,7 +354,7 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 
 	// GROUND PLANE
 
-	if (frame == 1) {
+	if (frame <= startFrame) {
 		float size = 5.0f;
 
 		UT_Vector3 p0(-size, groundPlane, -size);
@@ -382,7 +393,7 @@ SOP_SnowSim::cookMySop(OP_Context& context)
 	UT_Vector3 center(boundsPos.x(), boundsPos.y(), boundsPos.z());
 	UT_Vector3 half(boundsSize.x() * 0.5f, boundsSize.y() * 0.5f, boundsSize.z() * 0.5f);
 
-	if (frame == 1) {
+	if (frame <= startFrame) {
 		GA_Offset bb[8];
 		for (int k = 0; k < 2; ++k) {
 			for (int j = 0; j < 2; ++j) {

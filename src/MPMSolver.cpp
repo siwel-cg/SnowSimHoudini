@@ -498,8 +498,14 @@ float MPMSolver::querySdf(Eigen::Vector3f point)
         return std::numeric_limits<float>::max();
     }
 
-    const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
-    return vdbPrimSDF->getValueF(pointVDB);
+    UT_Vector3 worldPoint(point.x(), point.y(), point.z());
+    UT_Vector3 indexPoint;
+    vdbPrimSDF->worldToIndex(worldPoint, indexPoint);
+    return vdbPrimSDF->getValueF(indexPoint);
+
+
+    /*const UT_Vector3& pointVDB = UT_Vector3(point.x(), point.y(), point.z());
+    return vdbPrimSDF->getValueF(pointVDB);*/
 }
 
 Eigen::Vector3f MPMSolver::sdfNormal(Eigen::Vector3f point)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(hlsystem CXX)
+project(SnowSim CXX)
 
 set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "Limited configurations" FORCE)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Set the build type to Release by default" FORCE)
@@ -32,8 +32,6 @@ set(SOURCE_FILES
     src/MPMSolver.cpp
     src/grid.cpp
     src/particle.cpp
-    src/LSystem.cpp
-    src/LSYSTEMPlugin.C
     src/MPMPlugin.C
     src/main.cpp
     src/vec.cpp
@@ -43,8 +41,6 @@ set(HEADER_FILES
     src/MPMSolver.h
     src/grid.h
     src/particle.h
-    src/LSystem.h
-    src/LSYSTEMPlugin.h
     src/MPMPlugin.h
     src/matrix.h
     src/vec.h

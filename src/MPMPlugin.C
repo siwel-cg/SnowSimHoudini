@@ -26,20 +26,6 @@
 #include "grid.h"
 using namespace HDK_Sample;
 
-//
-// Help is stored in a "wiki" style text file. 
-//
-// See the sample_install.sh file for an example.
-//
-// NOTE : Follow this tutorial if you have any problems setting up your visual studio 2008 for Houdini 
-//  http://www.apileofgrains.nl/setting-up-the-hdk-for-houdini-12-with-visual-studio-2008/
-
-
-///
-/// newSopOperator is the hook that Houdini grabs from this dll
-/// and invokes to register the SOP.  In this case we add ourselves
-/// to the specified operator table.
-///
 void
 newSopOperator(OP_OperatorTable *table)
 {
@@ -127,7 +113,7 @@ static PRM_Range boundsPosRange(PRM_RANGE_UI, -100.0, PRM_RANGE_FREE, 100.0);
 
 
 PRM_Template SOP_SnowSim::myTemplateList[] = {
-	// --- Tab: Material Properties ---
+	// --- Material Properties ---
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &compressionName, &compressionDefault, 0, &compressionRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &stretchName,     &stretchDefault,     0, &stretchRange),
 	PRM_Template(PRM_FLT, PRM_Template::PRM_EXPORT_MIN, 1, &hardeningName,   &hardeningDefault,   0, &hardeningRange),
@@ -137,7 +123,7 @@ PRM_Template SOP_SnowSim::myTemplateList[] = {
 
 	PRM_Template(PRM_SEPARATOR, 0, 0), // DIVIDER LINE :P
 
-	// --- Tab: Simulation Settings ---
+	// --- Simulation Settings ---
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &timeStepName,    &timestepDefault,    0, &timeRange),
 	PRM_Template(PRM_FLT_J,  PRM_Template::PRM_EXPORT_MIN, 3, &gravityName,     gravForceDefault,    0, &gravityRange),
 	PRM_Template(PRM_FLT,    PRM_Template::PRM_EXPORT_MIN, 1, &groundName,      &groundDefault,      0, &groundRange),

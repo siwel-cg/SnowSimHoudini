@@ -1,4 +1,5 @@
 ﻿#include "mpmsolver.h"
+#include "Grid.h"
 #include <iostream>
 
 #include <Eigen/Dense>
@@ -500,7 +501,7 @@ float MPMSolver::querySdf(Eigen::Vector3f point)
 
     UT_Vector3 worldPoint(point.x(), point.y(), point.z());
     UT_Vector3 indexPoint;
-    vdbPrimSDF->worldToIndex(worldPoint, indexPoint);
+    //vdbPrimSDF->worldToIndex(worldPoint, indexPoint);
     return vdbPrimSDF->getValueF(indexPoint);
 
 
